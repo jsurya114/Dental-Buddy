@@ -54,11 +54,7 @@ Secure access tailored for every clinic role:
 - Node.js (v18+)
 - MongoDB (Local or Atlas)
 
-### **1. Clone the Repository**
-```bash
-git clone https://github.com/yourusername/dental-buddy.git
-cd dental-buddy
-```
+
 
 ### **2. Backend Setup**
 Navigate to the backend directory and install dependencies:
@@ -67,15 +63,6 @@ cd Backend
 npm install
 ```
 
-Create a `.env` file in the `Backend` directory:
-```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/dental_buddy
-JWT_SECRET=your_jwt_secret_key
-JWT_REFRESH_SECRET=your_refresh_secret_key
-FRONTEND_URL=http://localhost:5173
-node_env=development
-```
 
 Start the backend server:
 ```bash
@@ -96,15 +83,11 @@ Start the development server:
 npm run dev
 ```
 
-Access the application at `http://localhost:5173`.
+
 
 ---
 
-## 🔑 Default Credentials (Development)
 
-- **Super Admin**: `superadmin` / `password123`
-- **Clinic Admin**: `admin001` / `password123`
-- **Doctor**: `doc001` / `password123`
 
 ---
 
