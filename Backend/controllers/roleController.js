@@ -25,6 +25,7 @@ export const createRole = async (req, res) => {
             code: code.toUpperCase(),
             description: description || "",
             icon: icon || "🔐",
+            isProfessional: req.body.isProfessional || false,
             permissions: permissions || {}
         });
 
@@ -114,6 +115,7 @@ export const updateRole = async (req, res) => {
         if (description !== undefined) role.description = description;
         if (icon) role.icon = icon;
         if (isActive !== undefined) role.isActive = isActive;
+        if (req.body.isProfessional !== undefined) role.isProfessional = req.body.isProfessional;
         if (permissions !== undefined) role.permissions = permissions;
         role.updatedAt = new Date();
 
@@ -186,13 +188,11 @@ export const deleteRole = async (req, res) => {
             });
         }
 
-        role.isActive = false;
-        role.updatedAt = new Date();
-        await role.save();
+        await Role.findByIdAndDelete(req.params.id);
 
         return res.status(200).json({
             success: true,
-            message: "Role deleted successfully."
+            message: "Role deleted permanently."
         });
     } catch (error) {
         console.error("Delete role error:", error);

@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPatients } from "../../redux/patientSlice";
-import { fetchUsers } from "../../redux/userSlice";
+import { fetchUsers, fetchProfessionalUsers } from "../../redux/userSlice";
 
 const AppointmentModal = ({ isOpen, onClose, onSubmit, initialData = null }) => {
     const dispatch = useDispatch();
     const { patients } = useSelector(state => state.patients);
-    const { users } = useSelector(state => state.users); 
+    const { users, professionalUsers } = useSelector(state => state.users);
 
-    const doctors = users || [];
+    const doctors = professionalUsers || [];
 
     const [formData, setFormData] = useState({
         patientId: "",
@@ -25,7 +25,7 @@ const AppointmentModal = ({ isOpen, onClose, onSubmit, initialData = null }) => 
     useEffect(() => {
         if (isOpen) {
             dispatch(fetchPatients({ page: 1, limit: 100 })); // Fetch all for search (optimize later)
-            dispatch(fetchUsers({ page: 1, limit: 100 }));
+            dispatch(fetchProfessionalUsers());
         }
     }, [isOpen, dispatch]);
 

@@ -15,6 +15,7 @@ const RoleEdit = () => {
         code: "",
         description: "",
         icon: "🔐",
+        isProfessional: false,
         isActive: true,
         permissions: {}
     });
@@ -31,6 +32,7 @@ const RoleEdit = () => {
                     code: role.code || "",
                     description: role.description || "",
                     icon: role.icon || "🔐",
+                    isProfessional: role.isProfessional || false,
                     isActive: role.isActive ?? true,
                     permissions: role.permissions || {}
                 });
@@ -179,6 +181,25 @@ const RoleEdit = () => {
                                 rows={3}
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                             />
+                        </div>
+
+                        {/* Is Doctor/Professional Checkbox */}
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="checkbox"
+                                name="isProfessional"
+                                id="isProfessional"
+                                checked={formData.isProfessional}
+                                onChange={handleChange}
+                                disabled={isSystemRole}
+                                className="w-5 h-5 text-teal-500 border-gray-300 rounded focus:ring-teal-500 disabled:opacity-50"
+                            />
+                            <div>
+                                <label htmlFor="isProfessional" className="text-sm font-semibold text-gray-700 block">
+                                    Is Doctor?
+                                </label>
+                                <p className="text-xs text-gray-500">Check this if users with this role can treat patients.</p>
+                            </div>
                         </div>
 
                         {/* Icon Selection */}

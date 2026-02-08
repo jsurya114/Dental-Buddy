@@ -10,15 +10,17 @@ const RoleCreate = () => {
         displayName: "",
         code: "",
         description: "",
-        icon: "🔐"
+        icon: "🔐",
+        isProfessional: false
     });
 
     const iconOptions = ["🔐", "🦷", "📞", "🧾", "🪑", "💊", "🔬", "👨‍⚕️", "👩‍⚕️", "🏥", "📋", "💉"];
 
     const handleChange = (e) => {
+        const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+            [e.target.name]: value
         });
     };
 
@@ -129,6 +131,24 @@ const RoleCreate = () => {
                                 rows={3}
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                             />
+                        </div>
+
+                        {/* Is Doctor/Professional Checkbox */}
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="checkbox"
+                                name="isProfessional"
+                                id="isProfessional"
+                                checked={formData.isProfessional}
+                                onChange={handleChange}
+                                className="w-5 h-5 text-teal-500 border-gray-300 rounded focus:ring-teal-500"
+                            />
+                            <div>
+                                <label htmlFor="isProfessional" className="text-sm font-semibold text-gray-700 block">
+                                    Is Doctor?
+                                </label>
+                                <p className="text-xs text-gray-500">Check this if users with this role can treat patients.</p>
+                            </div>
                         </div>
 
                         {/* Icon Selection */}

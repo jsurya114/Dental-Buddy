@@ -1,25 +1,36 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import PatientListPanel from "../components/billing/PatientListPanel";
+import BillingWorkspace from "../components/billing/BillingWorkspace";
 
 export default function Billing() {
-    const navigate = useNavigate();
+    const [selectedPatient, setSelectedPatient] = useState(null);
 
     return (
-        <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mb-4 text-3xl shadow-sm text-teal-600">
-                💰
+        <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-gray-50 border-t border-gray-200">
+            {/* Left Panel: Patient List */}
+            <div className="w-1/3 min-w-[320px] max-w-md h-full border-r border-gray-200 bg-white">
+                <PatientListPanel
+                    selectedPatientId={selectedPatient?._id}
+                    onSelectPatient={setSelectedPatient}
+                />
             </div>
-            <h2 className="text-xl font-semibold mb-2 text-gray-800">Billing</h2>
-            <p className="text-gray-500 mb-6 max-w-md">
-                Billing is generated from completed procedures within a patient’s case sheet.
-                Please select a patient to manage billing.
-            </p>
 
-            <button
-                onClick={() => navigate("/app/patients")}
-                className="px-6 py-2 bg-teal-600 text-white rounded-lg shadow-md hover:bg-teal-700 transition-colors font-medium flex items-center gap-2"
-            >
-                <span>👥</span> Go to Patients
-            </button>
+            {/* Right Panel: Billing Workspace */}
+            <div className="flex-1 h-full overflow-hidden bg-gray-50">
+                {selectedPatient ? (
+                    <BillingWorkspace patient={selectedPatient} />
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-4xl shadow-inner">
+                            🧾
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-600">No Patient Selected</h3>
+                        <p className="max-w-sm text-center mt-2 text-sm text-gray-500">
+                            Select a patient from the list on the left to view their billing details and create invoices.
+                        </p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

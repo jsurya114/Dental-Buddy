@@ -16,9 +16,23 @@ const invoiceSchema = new mongoose.Schema({
     caseSheetId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "CaseSheet",
-        required: true
+        required: false
     },
 
+    // Ad-hoc/Standalone Billing Fields
+    treatmentDetails: {
+        treatmentName: String, // from dropdown
+        description: String
+    },
+
+    itemizedCharges: {
+        treatmentCharges: { type: Number, default: 0 },
+        doctorCharges: { type: Number, default: 0 },
+        labCharges: { type: Number, default: 0 },
+        otherCharges: { type: Number, default: 0 }
+    },
+
+    // Legacy/CaseSheet Context
     procedures: [{
         procedureId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -74,6 +88,11 @@ const invoiceSchema = new mongoose.Schema({
         default: ""
     },
 
+    isDoctorPaid: {
+        type: Boolean,
+        default: false
+    },
+
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
@@ -86,13 +105,12 @@ const invoiceSchema = new mongoose.Schema({
 
 
 // Pre-save hook to generate invoice number
-invoiceSchema.pre("save", async function (next) {
+invoiceSchema.pre("save", async function () {
     if (this.isNew && !this.invoiceNumber) {
         const count = await this.constructor.countDocuments();
         const year = new Date().getFullYear();
         this.invoiceNumber = `INV-${year}-${String(count + 1).padStart(5, "0")}`;
     }
-    next();
 });
 
 // Virtual for remaining balance

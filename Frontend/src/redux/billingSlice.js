@@ -91,6 +91,21 @@ export const fetchPayments = createAsyncThunk(
     }
 );
 
+// Toggle Doctor Payment Status
+export const toggleDoctorPayment = createAsyncThunk(
+    "billing/toggleDoctorPayment",
+    async (invoiceId, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.patch(`/invoices/${invoiceId}/toggle-doctor-payment`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to update status"
+            );
+        }
+    }
+);
+
 const initialState = {
     eligibleProcedures: [],
     invoices: [],
@@ -241,6 +256,18 @@ const billingSlice = createSlice({
             .addCase(addPayment.rejected, (state, action) => {
                 state.actionLoading = false;
                 state.error = action.payload;
+            })
+
+            // Toggle Doctor Payment
+            .addCase(toggleDoctorPayment.fulfilled, (state, action) => {
+                const { _id, isDoctorPaid } = action.payload;
+                const index = state.invoices.findIndex(inv => inv._id === _id);
+                if (index !== -1) {
+                    state.invoices[index].isDoctorPaid = isDoctorPaid;
+                }
+                if (state.currentInvoice && state.currentInvoice._id === _id) {
+                    state.currentInvoice.isDoctorPaid = isDoctorPaid;
+                }
             });
     }
 });

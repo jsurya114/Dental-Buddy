@@ -44,6 +44,10 @@ const roleSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    isProfessional: {
+        type: Boolean,
+        default: false
+    },
     isSystemRole: {
         type: Boolean,
         default: false

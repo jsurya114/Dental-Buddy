@@ -24,7 +24,7 @@ export const createUser = async (userData) => {
         throw new Error("Login ID already exists");
     }
 
-   
+
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -47,8 +47,16 @@ export const createUser = async (userData) => {
 };
 
 
-export const getAllUsers = async () => {
-    const users = await User.find()
+export const getAllUsers = async (filters = {}) => {
+    let query = {};
+
+    if (filters.isProfessional) {
+        const professionalRoles = await Role.find({ isProfessional: true, isActive: true }).select("code");
+        const roleCodes = professionalRoles.map(r => r.code);
+        query.roleCode = { $in: roleCodes };
+    }
+
+    const users = await User.find(query)
         .select("-password")
         .sort({ createdAt: -1 });
     return users;
@@ -72,13 +80,13 @@ export const updateUser = async (id, updateData) => {
 
     const { fullName, loginId, password, roleCode, isActive } = updateData;
 
-    
+
     if (roleCode && roleCode !== user.roleCode) {
         await validateRole(roleCode);
         user.roleCode = roleCode.toUpperCase();
     }
 
-    
+
     if (loginId && loginId !== user.loginId) {
         const existingUser = await User.findOne({ loginId });
         if (existingUser) {
@@ -139,11 +147,9 @@ export const deleteUser = async (id) => {
         throw new Error("User not found");
     }
 
-    user.isActive = false;
-    user.updatedAt = new Date();
-    await user.save();
+    await User.findByIdAndDelete(id);
 
-    return { message: "User deleted successfully" };
+    return { message: "User deleted permanently" };
 };
 
 /**

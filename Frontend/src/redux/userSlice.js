@@ -14,6 +14,19 @@ export const fetchUsers = createAsyncThunk(
     }
 );
 
+// Fetch professional users
+export const fetchProfessionalUsers = createAsyncThunk(
+    "users/fetchProfessional",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get("/public/users?isProfessional=true");
+            return response.data.users;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to fetch professional users");
+        }
+    }
+);
+
 // Create user
 export const createUser = createAsyncThunk(
     "users/create",
@@ -68,6 +81,7 @@ export const deleteUser = createAsyncThunk(
 
 const initialState = {
     users: [],
+    professionalUsers: [],
     loading: false,
     error: null,
     success: null
@@ -141,6 +155,19 @@ const userSlice = createSlice({
             .addCase(deleteUser.fulfilled, (state, action) => {
                 state.users = state.users.filter(u => u._id !== action.payload);
                 state.success = "User deleted successfully";
+            })
+            // Fetch professional users
+            .addCase(fetchProfessionalUsers.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchProfessionalUsers.fulfilled, (state, action) => {
+                state.loading = false;
+                state.professionalUsers = action.payload;
+            })
+            .addCase(fetchProfessionalUsers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
     }
 });

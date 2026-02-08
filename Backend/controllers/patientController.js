@@ -1,4 +1,5 @@
 import Patient from "../models/Patient.js";
+import mongoose from "mongoose";
 
 
 export const createPatient = async (req, res) => {
@@ -15,7 +16,7 @@ export const createPatient = async (req, res) => {
             emergencyContact
         } = req.body;
 
-     
+
         if (!fullName || !phone) {
             return res.status(400).json({
                 success: false,
@@ -23,7 +24,7 @@ export const createPatient = async (req, res) => {
             });
         }
 
-    
+
         const isDuplicate = await Patient.checkDuplicate(fullName, phone);
         if (isDuplicate) {
             return res.status(409).json({
@@ -73,7 +74,7 @@ export const listPatients = async (req, res) => {
         const search = req.query.search || "";
         const skip = (page - 1) * limit;
 
-      
+
         const query = { isActive: true };
 
         if (search) {
@@ -84,10 +85,10 @@ export const listPatients = async (req, res) => {
             ];
         }
 
-     
+
         const total = await Patient.countDocuments(query);
 
-       
+
         const patients = await Patient.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -158,7 +159,7 @@ export const updatePatient = async (req, res) => {
             emergencyContact
         } = req.body;
 
-     
+
         const patient = await Patient.findById(id);
         if (!patient) {
             return res.status(404).json({
@@ -167,7 +168,7 @@ export const updatePatient = async (req, res) => {
             });
         }
 
-      
+
         if (!fullName || !phone) {
             return res.status(400).json({
                 success: false,
@@ -175,7 +176,7 @@ export const updatePatient = async (req, res) => {
             });
         }
 
-        
+
         const isDuplicate = await Patient.checkDuplicate(fullName, phone, id);
         if (isDuplicate) {
             return res.status(409).json({
@@ -184,7 +185,7 @@ export const updatePatient = async (req, res) => {
             });
         }
 
-       
+
         patient.fullName = fullName;
         patient.gender = gender;
         patient.age = age;

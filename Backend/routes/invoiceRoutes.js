@@ -5,7 +5,8 @@ import {
     getEligibleProcedures,
     createInvoice,
     getInvoices,
-    getInvoiceById
+    getInvoiceById,
+    toggleDoctorPaymentStatus
 } from "../controllers/invoiceController.js";
 
 import audit from "../middleware/auditMiddleware.js";
@@ -44,5 +45,15 @@ router.post(
     audit("CREATE_INVOICE", "Invoice"),
     createInvoice
 );
+
+// Toggle doctor payment status
+// Toggle doctor payment status
+router.patch(
+    "/:id/toggle-doctor-payment",
+    auth,
+    can("BILLING", "CREATE"),
+    toggleDoctorPaymentStatus
+);
+
 
 export default router;

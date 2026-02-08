@@ -42,7 +42,6 @@ const PatientProfile = () => {
         { id: "cases", label: "Case Sheets", icon: "📋" },
         { id: "prescriptions", label: "Prescriptions", icon: "💊" },
         // Only show Billing for Admin and Billing Staff
-        ...(["CLINIC_ADMIN", "BILLING_STAFF"].includes(userRole) ? [{ id: "billing", label: "Billing", icon: "💰" }] : []),
         { id: "imaging", label: "Imaging", icon: "🔬" }
     ];
 
