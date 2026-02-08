@@ -28,6 +28,9 @@ const AppointmentList = ({ appointments, onEdit, onDelete, onStatusChange }) => 
         );
     }
 
+    // Check if any appointment is active (not cancelled) to decide whether to show Actions column
+    const showActionsColumn = appointments.some(apt => apt.status !== "CANCELLED");
+
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="overflow-x-auto">
@@ -39,7 +42,7 @@ const AppointmentList = ({ appointments, onEdit, onDelete, onStatusChange }) => 
                             <th className="px-6 py-4">Doctor</th>
                             <th className="px-6 py-4">Reason</th>
                             <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
+                            {showActionsColumn && <th className="px-6 py-4 text-right">Actions</th>}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -62,26 +65,28 @@ const AppointmentList = ({ appointments, onEdit, onDelete, onStatusChange }) => 
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {getStatusBadge(apt.status)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div className="flex justify-end gap-2">
-                                        {can("APPOINTMENT", "EDIT") && (
-                                            <button
-                                                onClick={() => onEdit(apt)}
-                                                className="text-teal-600 hover:text-teal-900 bg-teal-50 px-3 py-1 rounded-lg transition-colors"
-                                            >
-                                                Edit
-                                            </button>
-                                        )}
-                                        {can("APPOINTMENT", "DELETE") && ["BOOKED", "CHECKED_IN"].includes(apt.status) && (
-                                            <button
-                                                onClick={() => onDelete(apt._id)}
-                                                className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-lg transition-colors"
-                                            >
-                                                Cancel
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
+                                {showActionsColumn && (
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div className="flex justify-end gap-2">
+                                            {can("APPOINTMENT", "EDIT") && apt.status !== "CANCELLED" && (
+                                                <button
+                                                    onClick={() => onEdit(apt)}
+                                                    className="text-teal-600 hover:text-teal-900 bg-teal-50 px-3 py-1 rounded-lg transition-colors"
+                                                >
+                                                    Edit
+                                                </button>
+                                            )}
+                                            {can("APPOINTMENT", "DELETE") && ["BOOKED", "CHECKED_IN"].includes(apt.status) && (
+                                                <button
+                                                    onClick={() => onDelete(apt._id)}
+                                                    className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-lg transition-colors"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

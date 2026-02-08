@@ -5,19 +5,15 @@ import { v4 as uuidv4 } from "uuid";
 import { fileURLToPath } from "url";
 import Imaging, { CATEGORIES } from "../models/Imaging.js";
 
-// Get directory path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Upload directory
 const UPLOAD_DIR = path.join(__dirname, "..", "uploads", "imaging");
 
-// Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
-// Multer storage configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, UPLOAD_DIR);
@@ -29,7 +25,6 @@ const storage = multer.diskStorage({
     }
 });
 
-// File filter - allow images and PDFs
 const fileFilter = (req, file, cb) => {
     const allowedTypes = [
         "image/jpeg",
@@ -46,7 +41,6 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Multer instance
 const upload = multer({
     storage,
     fileFilter,
@@ -55,13 +49,8 @@ const upload = multer({
     }
 });
 
-// Export multer middleware
 export const uploadMiddleware = upload.single("file");
 
-/**
- * Get imaging categories
- * GET /api/imaging/categories
- */
 export const getCategories = async (req, res) => {
     res.json({
         success: true,
@@ -69,10 +58,6 @@ export const getCategories = async (req, res) => {
     });
 };
 
-/**
- * Upload imaging file
- * POST /api/imaging/upload
- */
 export const uploadImaging = async (req, res) => {
     try {
         if (!req.file) {
@@ -84,9 +69,7 @@ export const uploadImaging = async (req, res) => {
 
         const { patientId, caseSheetId, procedureId, category, title, description } = req.body;
 
-        // Validate required fields
         if (!patientId || !category || !title) {
-            // Delete uploaded file if validation fails
             fs.unlinkSync(req.file.path);
             return res.status(400).json({
                 success: false,
@@ -94,7 +77,6 @@ export const uploadImaging = async (req, res) => {
             });
         }
 
-        // Validate category
         if (!CATEGORIES.includes(category)) {
             fs.unlinkSync(req.file.path);
             return res.status(400).json({
@@ -141,10 +123,6 @@ export const uploadImaging = async (req, res) => {
     }
 };
 
-/**
- * Get imaging files by patient
- * GET /api/imaging?patientId=...
- */
 export const getImagingByPatient = async (req, res) => {
     try {
         const { patientId, category } = req.query;
@@ -165,7 +143,6 @@ export const getImagingByPatient = async (req, res) => {
             .populate("procedureId", "name")
             .sort({ uploadedAt: -1 });
 
-        // Group by category
         const grouped = CATEGORIES.reduce((acc, cat) => {
             acc[cat] = imaging.filter(img => img.category === cat);
             return acc;
@@ -186,10 +163,6 @@ export const getImagingByPatient = async (req, res) => {
     }
 };
 
-/**
- * Get single imaging file metadata
- * GET /api/imaging/:id
- */
 export const getImagingById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -220,10 +193,6 @@ export const getImagingById = async (req, res) => {
     }
 };
 
-/**
- * Preview/Download imaging file
- * GET /api/imaging/:id/preview
- */
 export const previewFile = async (req, res) => {
     try {
         const { id } = req.params;

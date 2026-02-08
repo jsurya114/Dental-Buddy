@@ -4,9 +4,6 @@ import Procedure from "../models/Procedure.js";
 import Patient from "../models/Patient.js";
 import mongoose from "mongoose";
 
-/**
- * Helper to get date range from query
- */
 const getDateRange = (query) => {
     const { from, to } = query;
     const start = from ? new Date(from) : new Date(new Date().setMonth(new Date().getMonth() - 1));
@@ -20,10 +17,6 @@ const getDateRange = (query) => {
     return { start, end };
 };
 
-/**
- * Report: Daily Collection
- * GET /api/reports/finance/daily?date=YYYY-MM-DD
- */
 export const getDailyCollection = async (req, res) => {
     try {
         const date = req.query.date ? new Date(req.query.date) : new Date();
@@ -71,10 +64,6 @@ export const getDailyCollection = async (req, res) => {
     }
 };
 
-/**
- * Report: Monthly Revenue
- * GET /api/reports/finance/monthly?year=2026
- */
 export const getMonthlyRevenue = async (req, res) => {
     try {
         const year = parseInt(req.query.year) || new Date().getFullYear();
@@ -121,10 +110,6 @@ export const getMonthlyRevenue = async (req, res) => {
     }
 };
 
-/**
- * Report: Outstanding Dues
- * GET /api/reports/finance/outstanding
- */
 export const getOutstandingDues = async (req, res) => {
     try {
         const invoices = await Invoice.find({
@@ -159,10 +144,6 @@ export const getOutstandingDues = async (req, res) => {
     }
 };
 
-/**
- * Report: Procedure Frequency (Clinical)
- * GET /api/reports/clinical/procedures?from=...&to=...
- */
 export const getProcedureStats = async (req, res) => {
     try {
         const { start, end } = getDateRange(req.query);
@@ -200,10 +181,6 @@ export const getProcedureStats = async (req, res) => {
     }
 };
 
-/**
- * Report: Patient Growth (Operational)
- * GET /api/reports/operational/patients?year=2026
- */
 export const getNewPatients = async (req, res) => {
     try {
         const year = parseInt(req.query.year) || new Date().getFullYear();

@@ -20,10 +20,10 @@ const runTest = async () => {
     console.log("🚀 Starting Patient Module Verification...");
 
     try {
-        // 1. Connect DB
+      
         await connectDB();
 
-        // 2. Create Test Admin
+     
         const hashedPassword = await bcrypt.hash(TEST_USER.password, 10);
         const admin = await ClinicAdmin.create({
             ...TEST_USER,

@@ -3,19 +3,19 @@ import auth from "../middleware/authMiddleware.js";
 import { can } from "../middleware/permissionMiddleware.js";
 import {
     addPayment,
-    getPaymentsByInvoice
+    getPayments
 } from "../controllers/paymentController.js";
 
 import audit from "../middleware/auditMiddleware.js";
 
 const router = express.Router();
 
-// Get payments for an invoice
+// Get payments (by invoiceId or patientId)
 router.get(
     "/",
     auth,
     can("PAYMENT", "VIEW"),
-    getPaymentsByInvoice
+    getPayments
 );
 
 // Add payment to invoice

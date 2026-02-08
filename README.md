@@ -64,7 +64,7 @@ npm install
 ```
 
 
-Start the backend server:
+Start the backend server:@terminal:powershell
 ```bash
 npm run dev
 # or

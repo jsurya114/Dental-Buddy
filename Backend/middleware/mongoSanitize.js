@@ -1,12 +1,3 @@
-/**
- * Custom Mongo Sanitize Middleware
- * 
- * Express 5 makes req.query immutable (getter only), so standard 
- * libraries that try to reassign req.query (req.query = sanitize(req.query)) fail.
- * 
- * This middleware sanitizes inputs (body, query, params) IN-PLACE by deleting 
- * keys that start with '$' or contain '.', preventing NoSQL injection.
- */
 
 const sanitize = (obj) => {
     if (obj && typeof obj === 'object') {

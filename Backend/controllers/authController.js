@@ -55,7 +55,7 @@ export const login = async (req, res) => {
             });
         }
 
-        // Check Account Lock (Only for non-ClinicAdmins for now)
+      
         if (!isClinicAdmin && user.lockUntil && user.lockUntil > Date.now()) {
             return res.status(403).json({
                 success: false,
@@ -127,7 +127,7 @@ export const login = async (req, res) => {
             permissions
         };
 
-        // Expose user for audit logging
+ 
         req.user = { userId: user._id };
 
         return res.status(200).json({

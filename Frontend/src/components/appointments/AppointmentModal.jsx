@@ -6,9 +6,8 @@ import { fetchUsers } from "../../redux/userSlice";
 const AppointmentModal = ({ isOpen, onClose, onSubmit, initialData = null }) => {
     const dispatch = useDispatch();
     const { patients } = useSelector(state => state.patients);
-    const { users } = useSelector(state => state.users); // Assuming doctors are in users
+    const { users } = useSelector(state => state.users); 
 
-    // For now, list all active users, or filter by role if possible
     const doctors = users || [];
 
     const [formData, setFormData] = useState({

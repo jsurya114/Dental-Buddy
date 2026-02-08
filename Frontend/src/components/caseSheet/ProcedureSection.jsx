@@ -11,7 +11,6 @@ import {
     clearError
 } from "../../redux/procedureSlice";
 
-// Common dental procedures for quick selection
 const COMMON_PROCEDURES = [
     "Scaling",
     "Polishing",
@@ -29,22 +28,22 @@ const COMMON_PROCEDURES = [
 
 const STATUS_CONFIG = {
     PLANNED: {
-        color: "bg-blue-100 text-blue-700",
+      
         icon: "📋",
         label: "Planned"
     },
     IN_PROGRESS: {
-        color: "bg-yellow-100 text-yellow-700",
+     
         icon: "⏳",
         label: "In Progress"
     },
     COMPLETED: {
-        color: "bg-green-100 text-green-700",
+       
         icon: "✓",
         label: "Completed"
     },
     CANCELLED: {
-        color: "bg-gray-100 text-gray-500",
+  
         icon: "✗",
         label: "Cancelled"
     }

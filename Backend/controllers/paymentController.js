@@ -1,10 +1,6 @@
 import Payment from "../models/Payment.js";
 import Invoice from "../models/Invoice.js";
 
-/**
- * Add payment to an invoice
- * POST /api/payments
- */
 export const addPayment = async (req, res) => {
     try {
         const { invoiceId, amount, mode, reference, notes } = req.body;
@@ -90,33 +86,44 @@ export const addPayment = async (req, res) => {
     }
 };
 
-/**
- * Get payments for an invoice
- * GET /api/payments?invoiceId=...
- */
-export const getPaymentsByInvoice = async (req, res) => {
+export const getPayments = async (req, res) => {
     try {
-        const { invoiceId } = req.query;
+        const { invoiceId, patientId } = req.query;
 
-        if (!invoiceId) {
+        if (!invoiceId && !patientId) {
             return res.status(400).json({
                 success: false,
-                message: "invoiceId is required"
+                message: "Either invoiceId or patientId is required"
             });
         }
 
-        const payments = await Payment.find({ invoiceId })
+        let query = {};
+
+        if (invoiceId) {
+            query.invoiceId = invoiceId;
+        } else if (patientId) {
+            // Find all invoices for this patient first
+            const invoices = await Invoice.find({ patientId }).select("_id");
+            const invoiceIds = invoices.map(inv => inv._id);
+            query.invoiceId = { $in: invoiceIds };
+        }
+
+        const payments = await Payment.find(query)
             .populate("receivedBy", "fullName")
+            .populate("invoiceId", "invoiceNumber") // Populate invoice number for reference
             .sort({ receivedAt: -1 });
 
-        // Get invoice summary
-        const invoice = await Invoice.findById(invoiceId).select("invoiceNumber totalAmount paidAmount status");
+        // If fetching by invoiceId, include invoice summary (backward compatibility/specific use case)
+        let invoice = null;
+        if (invoiceId) {
+            invoice = await Invoice.findById(invoiceId).select("invoiceNumber totalAmount paidAmount status");
+        }
 
         res.json({
             success: true,
             data: {
                 payments,
-                invoice
+                invoice // Will be null if fetching by patientId
             }
         });
     } catch (error) {
@@ -130,5 +137,5 @@ export const getPaymentsByInvoice = async (req, res) => {
 
 export default {
     addPayment,
-    getPaymentsByInvoice
+    getPayments
 };

@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { usePermissions } from "../../hooks/usePermission";
 
-/**
- * Helper to calculate position and height for events
- */
 const getEventStyle = (startTime, durationMinutes) => {
     const startHour = startTime.getHours();
     const startMin = startTime.getMinutes();
@@ -43,32 +40,25 @@ const CalendarView = ({ appointments, onSelectAppointment, onViewChange, current
                     >
                         Day
                     </button>
-                    {/* Week view placeholder */}
                     <button className="px-3 py-1 rounded-lg text-gray-400 cursor-not-allowed">Week</button>
                 </div>
             </div>
-
-            {/* Grid */}
             <div className="flex-1 overflow-y-auto relative custom-scrollbar">
                 {hours.map(hour => (
                     <div key={hour} className="flex border-b border-gray-100 h-[100px]">
-                        {/* Time Column */}
                         <div className="w-16 flex-shrink-0 text-right pr-3 pt-2 text-xs text-gray-500 font-medium border-r border-gray-100 bg-gray-50 sticky left-0 z-10">
                             {hour > 12 ? hour - 12 : hour} {hour >= 12 ? 'PM' : 'AM'}
                         </div>
-                        {/* Event Area */}
                         <div className="flex-1 relative bg-white bg-[linear-gradient(to_right,#f9fafb_1px,transparent_1px),linear-gradient(to_bottom,#f9fafb_1px,transparent_1px)] bg-[size:100%_25px]">
-                            {/* Render appointments for this hour block if needed */}
                         </div>
                     </div>
                 ))}
 
-                {/* Render Appointments Absolute */}
                 <div className="absolute top-0 left-16 right-0 h-full pointer-events-none">
                     {appointments.map(apt => {
                         const date = new Date(apt.appointmentDate);
                         const hour = date.getHours();
-                        if (hour < 8 || hour > 20) return null; // Only show 8-8
+                        if (hour < 8 || hour > 20) return null; 
 
                         const style = getEventStyle(date, apt.durationMinutes);
 

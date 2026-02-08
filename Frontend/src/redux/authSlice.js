@@ -33,7 +33,6 @@ export const loginUser = createAsyncThunk(
     }
 );
 
-// Refresh token thunk (Optional now if handled by httpOnly cookie auto-send, but might be needed for manual refresh if access token short lived)
 export const refreshToken = createAsyncThunk(
     "auth/refreshToken",
     async (_, { rejectWithValue }) => {
@@ -65,13 +64,7 @@ export const logoutUser = createAsyncThunk(
 
 const initialState = {
     user: null,
-    // accessToken: null, // No longer stored in state if we rely on cookies? Or keep for memory only?
-    // Maintaining accessToken in memory is fine for Axios interceptor injection if we did that.
-    // But since we moved to cookies, we might not need it if the cookie is sent automatically.
-    // However, the cookie is HttpOnly, so JS cannot read it. 
-    // If the backend expects Bearer header, we NEED the token. 
-    // But the backend `authMiddleware` I wrote CHECKS COOKIES. 
-    // So we don't need the token in Redux state for requests!
+   
     isAuthenticated: false,
     loading: true, // Start true to check session
     error: null

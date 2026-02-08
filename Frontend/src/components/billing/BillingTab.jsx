@@ -4,6 +4,7 @@ import { usePermissions } from "../../hooks/usePermission";
 import {
     fetchEligibleProcedures,
     fetchInvoices,
+    fetchPayments,
     createInvoice,
     addPayment,
     clearSuccessMessage,
@@ -19,15 +20,15 @@ const PAYMENT_MODES = [
 ];
 
 const STATUS_CONFIG = {
-    UNPAID: { color: "bg-red-100 text-red-700", label: "Unpaid" },
-    PARTIALLY_PAID: { color: "bg-yellow-100 text-yellow-700", label: "Partial" },
-    PAID: { color: "bg-green-100 text-green-700", label: "Paid" }
+    UNPAID: { label: "Unpaid" },
+    PARTIALLY_PAID: { label: "Partial" },
+    PAID: { label: "Paid" }
 };
 
 const BillingTab = ({ patientId, caseSheetId }) => {
     const dispatch = useDispatch();
     const { can } = usePermissions();
-    const { eligibleProcedures, invoices, loading, actionLoading, error, successMessage } = useSelector(state => state.billing);
+    const { eligibleProcedures, invoices, payments, loading, actionLoading, error, successMessage } = useSelector(state => state.billing);
 
     const [selectedProcedures, setSelectedProcedures] = useState({});
     const [procedureAmounts, setProcedureAmounts] = useState({});
@@ -42,6 +43,7 @@ const BillingTab = ({ patientId, caseSheetId }) => {
         if (patientId) {
             dispatch(fetchEligibleProcedures(patientId));
             dispatch(fetchInvoices(patientId));
+            dispatch(fetchPayments(patientId));
         }
     }, [dispatch, patientId]);
 
@@ -332,6 +334,61 @@ const BillingTab = ({ patientId, caseSheetId }) => {
                 )}
             </div>
 
+            {/* Payments List */}
+            <div>
+                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span>💰</span> Payments
+                    <span className="text-sm font-normal text-gray-500">({payments?.length || 0})</span>
+                </h3>
+
+                {payments?.length > 0 ? (
+                    <div className="overflow-x-auto bg-white rounded-xl border border-gray-200">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-gray-200 bg-gray-50">
+                                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Date</th>
+                                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Invoice No</th>
+                                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Mode</th>
+                                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Reference</th>
+                                    <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Amount</th>
+                                    <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Received By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {payments.map((payment) => (
+                                    <tr key={payment._id} className="border-b border-gray-100 hover:bg-gray-50">
+                                        <td className="py-4 px-4 text-gray-600 text-sm">
+                                            {new Date(payment.receivedAt).toLocaleDateString()}
+                                            <div className="text-xs text-gray-400">{new Date(payment.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                        </td>
+                                        <td className="py-4 px-4 text-sm font-medium text-gray-800">
+                                            {payment.invoiceId?.invoiceNumber || "—"}
+                                        </td>
+                                        <td className="py-4 px-4 text-sm text-gray-700">
+                                            {PAYMENT_MODES.find(m => m.value === payment.mode)?.label || payment.mode}
+                                        </td>
+                                        <td className="py-4 px-4 text-sm text-gray-600 font-mono">
+                                            {payment.reference || "—"}
+                                        </td>
+                                        <td className="py-4 px-4 text-right font-medium text-emerald-600">
+                                            ₹{payment.amount.toFixed(2)}
+                                        </td>
+                                        <td className="py-4 px-4 text-sm text-gray-600">
+                                            {payment.receivedBy?.fullName || "—"}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-xl">
+                        <div className="text-4xl mb-3">💰</div>
+                        <p>No payments recorded yet.</p>
+                    </div>
+                )}
+            </div>
+
             {/* Payment Modal */}
             {showPaymentModal && selectedInvoice && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -369,8 +426,8 @@ const BillingTab = ({ patientId, caseSheetId }) => {
                                             type="button"
                                             onClick={() => setPaymentData({ ...paymentData, mode: mode.value })}
                                             className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${paymentData.mode === mode.value
-                                                    ? "bg-teal-500 text-white border-teal-500"
-                                                    : "bg-gray-50 text-gray-700 border-gray-200 hover:border-teal-300"
+                                                ? "bg-teal-500 text-white border-teal-500"
+                                                : "bg-gray-50 text-gray-700 border-gray-200 hover:border-teal-300"
                                                 }`}
                                         >
                                             {mode.label}

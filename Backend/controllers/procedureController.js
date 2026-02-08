@@ -10,10 +10,6 @@ const ALLOWED_TRANSITIONS = {
     CANCELLED: []
 };
 
-/**
- * Create a new planned procedure
- * POST /api/procedures
- */
 export const createProcedure = async (req, res) => {
     try {
         const { patientId, caseSheetId, name, toothNumber, notes, isBillable } = req.body;
@@ -69,10 +65,6 @@ export const createProcedure = async (req, res) => {
     }
 };
 
-/**
- * Get procedures by case sheet ID
- * GET /api/procedures?caseSheetId=...
- */
 export const getProcedures = async (req, res) => {
     try {
         const { caseSheetId, patientId, status } = req.query;
@@ -107,10 +99,6 @@ export const getProcedures = async (req, res) => {
     }
 };
 
-/**
- * Get a single procedure by ID
- * GET /api/procedures/:id
- */
 export const getProcedureById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -141,10 +129,6 @@ export const getProcedureById = async (req, res) => {
     }
 };
 
-/**
- * Update procedure (only for non-locked procedures)
- * PATCH /api/procedures/:id
- */
 export const updateProcedure = async (req, res) => {
     try {
         const { id } = req.params;
@@ -189,10 +173,6 @@ export const updateProcedure = async (req, res) => {
     }
 };
 
-/**
- * Update procedure status (with transition validation)
- * PATCH /api/procedures/:id/status
- */
 export const updateProcedureStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -251,10 +231,6 @@ export const updateProcedureStatus = async (req, res) => {
     }
 };
 
-/**
- * Complete a procedure (dedicated endpoint with COMPLETE permission)
- * PATCH /api/procedures/:id/complete
- */
 export const completeProcedure = async (req, res) => {
     try {
         const { id } = req.params;
@@ -299,10 +275,6 @@ export const completeProcedure = async (req, res) => {
     }
 };
 
-/**
- * Get procedures eligible for billing (COMPLETED + isBillable)
- * GET /api/billing/eligible-procedures?patientId=...
- */
 export const getEligibleForBilling = async (req, res) => {
     try {
         const { patientId } = req.query;

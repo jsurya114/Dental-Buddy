@@ -2,7 +2,7 @@
 export const RESOURCES = {
     PATIENT: "PATIENT",
     APPOINTMENT: "APPOINTMENT",
-    // Case Sheet Section-Level Permissions
+ 
     CASE_PERSONAL: "CASE_PERSONAL",
     CASE_MEDICAL: "CASE_MEDICAL",
     CASE_EXAM: "CASE_EXAM",

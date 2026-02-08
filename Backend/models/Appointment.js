@@ -41,7 +41,7 @@ const appointmentSchema = new mongoose.Schema({
 
     reason: String,
 
-    // Optional: Link to Case Sheet if one is created from this appointment
+
     caseSheetId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "CaseSheet"

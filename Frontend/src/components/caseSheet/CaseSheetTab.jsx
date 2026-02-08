@@ -10,7 +10,6 @@ import {
 } from "../../redux/caseSheetSlice";
 import ProcedureSection from "./ProcedureSection";
 
-// Section configuration
 const SECTIONS = [
     { id: "personal-history", key: "personalHistory", label: "Personal History", icon: "📝", permission: "CASE_PERSONAL" },
     { id: "medical-history", key: "medicalHistory", label: "Medical History", icon: "🏥", permission: "CASE_MEDICAL" },
@@ -73,7 +72,6 @@ const CaseSheetTab = ({ patientId }) => {
         }));
     };
 
-    // Get visible sections based on permissions
     const visibleSections = SECTIONS.filter(section => can(section.permission, "VIEW"));
 
     if (loading) {
@@ -84,7 +82,6 @@ const CaseSheetTab = ({ patientId }) => {
         );
     }
 
-    // No case sheet exists - show create button
     if (!currentCaseSheet) {
         return (
             <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -144,9 +141,7 @@ const CaseSheetTab = ({ patientId }) => {
                 ))}
             </div>
 
-            {/* Section Content */}
             <div className="bg-gray-50 rounded-xl p-6">
-                {/* Section Header */}
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                         <span>{currentSectionConfig?.icon}</span>
@@ -335,7 +330,6 @@ const CaseSheetTab = ({ patientId }) => {
                     </div>
                 )}
 
-                {/* Procedures Section - Now uses dedicated component */}
                 {activeSection === "procedures" && currentCaseSheet && (
                     <ProcedureSection
                         caseSheetId={currentCaseSheet._id}
@@ -343,7 +337,6 @@ const CaseSheetTab = ({ patientId }) => {
                     />
                 )}
 
-                {/* Notes Section */}
                 {activeSection === "notes" && (
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Notes & Follow-ups</label>

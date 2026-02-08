@@ -2,7 +2,7 @@ import CaseSheet from "../models/CaseSheet.js";
 import Patient from "../models/Patient.js";
 import Role from "../models/Role.js";
 
-// Section to Permission Mapping
+
 const sectionPermissionMap = {
     "personal-history": { module: "CASE_PERSONAL", field: "personalHistory" },
     "medical-history": { module: "CASE_MEDICAL", field: "medicalHistory" },
@@ -13,7 +13,7 @@ const sectionPermissionMap = {
     "notes": { module: "CASE_NOTES", field: "notes" }
 };
 
-// Helper: Check if user has permission for a section
+
 const hasPermission = async (roleCode, module, action) => {
     if (roleCode === "CLINIC_ADMIN") return true;
 
@@ -23,7 +23,7 @@ const hasPermission = async (roleCode, module, action) => {
     return role.permissions?.[module]?.includes(action) || false;
 };
 
-// Helper: Filter case sheet sections based on user permissions
+
 const filterSectionsByPermission = async (caseSheet, roleCode) => {
     if (roleCode === "CLINIC_ADMIN") {
         return caseSheet;
@@ -40,7 +40,7 @@ const filterSectionsByPermission = async (caseSheet, roleCode) => {
         createdBy: caseSheet.createdBy
     };
 
-    // Add each section only if user has VIEW permission
+   
     if (permissions.CASE_PERSONAL?.includes("VIEW")) {
         filtered.personalHistory = caseSheet.personalHistory;
     }
@@ -66,12 +66,12 @@ const filterSectionsByPermission = async (caseSheet, roleCode) => {
     return filtered;
 };
 
-// Create new case sheet for a patient
+
 export const createCaseSheet = async (req, res) => {
     try {
         const { patientId, personalHistory } = req.body;
 
-        // Validate patient exists
+       
         const patient = await Patient.findById(patientId);
         if (!patient) {
             return res.status(404).json({
@@ -80,7 +80,7 @@ export const createCaseSheet = async (req, res) => {
             });
         }
 
-        // Check if case sheet already exists for this patient
+      
         const existing = await CaseSheet.findOne({ patientId });
         if (existing) {
             return res.status(409).json({
@@ -112,7 +112,7 @@ export const createCaseSheet = async (req, res) => {
     }
 };
 
-// Get case sheet by ID (with section filtering)
+
 export const getCaseSheet = async (req, res) => {
     try {
         const { id } = req.params;
@@ -129,7 +129,7 @@ export const getCaseSheet = async (req, res) => {
             });
         }
 
-        // Filter sections based on user permissions
+     
         const filteredCaseSheet = await filterSectionsByPermission(
             caseSheet.toObject(),
             req.user.role
@@ -148,7 +148,7 @@ export const getCaseSheet = async (req, res) => {
     }
 };
 
-// Get case sheet by patient ID
+
 export const getCaseSheetByPatient = async (req, res) => {
     try {
         const { patientId } = req.params;
@@ -165,7 +165,7 @@ export const getCaseSheetByPatient = async (req, res) => {
             });
         }
 
-        // Filter sections based on user permissions
+       
         const filteredCaseSheet = await filterSectionsByPermission(
             caseSheet.toObject(),
             req.user.role
@@ -184,13 +184,12 @@ export const getCaseSheetByPatient = async (req, res) => {
     }
 };
 
-// Update a specific section of the case sheet
+
 export const updateSection = async (req, res) => {
     try {
         const { id, sectionName } = req.params;
         const sectionData = req.body;
 
-        // Validate section name
         const sectionConfig = sectionPermissionMap[sectionName];
         if (!sectionConfig) {
             return res.status(400).json({
@@ -199,7 +198,7 @@ export const updateSection = async (req, res) => {
             });
         }
 
-        // Check permission for this section
+       
         const canEdit = await hasPermission(req.user.role, sectionConfig.module, "EDIT");
         if (!canEdit) {
             return res.status(403).json({
@@ -208,7 +207,7 @@ export const updateSection = async (req, res) => {
             });
         }
 
-        // Find and update
+
         const caseSheet = await CaseSheet.findById(id);
         if (!caseSheet) {
             return res.status(404).json({
@@ -217,7 +216,7 @@ export const updateSection = async (req, res) => {
             });
         }
 
-        // Update the specific section
+    
         caseSheet[sectionConfig.field] = sectionData;
         caseSheet.updatedBy = req.user.userId;
         await caseSheet.save();
@@ -238,7 +237,7 @@ export const updateSection = async (req, res) => {
     }
 };
 
-// Add item to treatment plan
+
 export const addTreatmentPlanItem = async (req, res) => {
     try {
         const { id } = req.params;
@@ -270,7 +269,7 @@ export const addTreatmentPlanItem = async (req, res) => {
     }
 };
 
-// Add procedure record
+
 export const addProcedure = async (req, res) => {
     try {
         const { id } = req.params;
@@ -306,13 +305,13 @@ export const addProcedure = async (req, res) => {
     }
 };
 
-// Get user's section permissions for a case sheet
+
 export const getSectionPermissions = async (req, res) => {
     try {
         const roleCode = req.user.role;
 
         if (roleCode === "CLINIC_ADMIN") {
-            // Admin has all permissions
+           
             const allPermissions = {};
             Object.keys(sectionPermissionMap).forEach(section => {
                 allPermissions[section] = { view: true, edit: true, create: true };

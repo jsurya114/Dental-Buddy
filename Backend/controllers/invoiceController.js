@@ -3,10 +3,6 @@ import Payment from "../models/Payment.js";
 import Procedure from "../models/Procedure.js";
 import CaseSheet from "../models/CaseSheet.js";
 
-/**
- * Get eligible procedures for billing
- * GET /api/invoices/eligible-procedures?patientId=...
- */
 export const getEligibleProcedures = async (req, res) => {
     try {
         const { patientId } = req.query;
@@ -18,7 +14,6 @@ export const getEligibleProcedures = async (req, res) => {
             });
         }
 
-        // Get COMPLETED, billable, not-yet-invoiced procedures
         const procedures = await Procedure.find({
             patientId,
             status: "COMPLETED",
@@ -43,10 +38,6 @@ export const getEligibleProcedures = async (req, res) => {
     }
 };
 
-/**
- * Create a new invoice from procedures
- * POST /api/invoices
- */
 export const createInvoice = async (req, res) => {
     try {
         const {
@@ -143,10 +134,6 @@ export const createInvoice = async (req, res) => {
     }
 };
 
-/**
- * Get invoices by patient
- * GET /api/invoices?patientId=...
- */
 export const getInvoices = async (req, res) => {
     try {
         const { patientId, status } = req.query;
@@ -179,10 +166,6 @@ export const getInvoices = async (req, res) => {
     }
 };
 
-/**
- * Get single invoice with payments
- * GET /api/invoices/:id
- */
 export const getInvoiceById = async (req, res) => {
     try {
         const { id } = req.params;

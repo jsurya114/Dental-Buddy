@@ -4,8 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-// import mongoSanitize from "express-mongo-sanitize"; // Removed due to Express 5 incompatibility
-import mongoSanitize from "./middleware/mongoSanitize.js"; // Custom in-place sanitizer
+import mongoSanitize from "./middleware/mongoSanitize.js";
 import connectDB from "./config/db.js";
 import clinicAdminRoutes from "./routes/clinicAdminRoutes.js";
 import publicRoutes from "./routes/publicRoutes.js";
@@ -19,31 +18,29 @@ import invoiceRoutes from "./routes/invoiceRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import imagingRoutes from "./routes/imagingRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 
 dotenv.config();
 
-// Connect to MongoDB
 connectDB();
 
 const app = express();
 
-// Security Middleware
 app.use(helmet());
 
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100000, // Effectively disabled for development
+    windowMs: 15 * 60 * 1000,
+    max: 100000,
     message: "Too many requests from this IP, please try again later."
 });
 app.use(limiter);
 
-// Middleware
 app.use(cors({
-    origin: "http://localhost:5173", // Update with your frontend URL
-    credentials: true // Allow cookies to be sent
+    origin: "http://localhost:5173",
+    credentials: true
 }));
-app.use(express.json({ limit: "10kb" })); // Body limit
+app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 app.use(mongoSanitize()); // Custom sanitizer
 
@@ -60,6 +57,7 @@ app.use("/api/invoices", invoiceRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/imaging", imagingRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/appointments", appointmentRoutes);
 
 // Health check route

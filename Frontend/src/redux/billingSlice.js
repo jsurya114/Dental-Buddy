@@ -76,9 +76,25 @@ export const addPayment = createAsyncThunk(
     }
 );
 
+// Fetch payments by patient
+export const fetchPayments = createAsyncThunk(
+    "billing/fetchPayments",
+    async (patientId, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`/payments?patientId=${patientId}`);
+            return response.data.data.payments;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch payments"
+            );
+        }
+    }
+);
+
 const initialState = {
     eligibleProcedures: [],
     invoices: [],
+    payments: [],
     currentInvoice: null,
     loading: false,
     actionLoading: false,
@@ -93,6 +109,7 @@ const billingSlice = createSlice({
         clearBilling: (state) => {
             state.eligibleProcedures = [];
             state.invoices = [];
+            state.payments = [];
             state.currentInvoice = null;
             state.error = null;
             state.successMessage = null;
@@ -153,6 +170,20 @@ const billingSlice = createSlice({
                 state.error = action.payload;
             })
 
+            // Fetch payments
+            .addCase(fetchPayments.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchPayments.fulfilled, (state, action) => {
+                state.loading = false;
+                state.payments = action.payload;
+            })
+            .addCase(fetchPayments.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
             // Fetch invoice by ID
             .addCase(fetchInvoiceById.pending, (state) => {
                 state.actionLoading = true;
@@ -175,7 +206,7 @@ const billingSlice = createSlice({
             .addCase(addPayment.fulfilled, (state, action) => {
                 state.actionLoading = false;
                 // Update invoice in list
-                const { invoice } = action.payload;
+                const { invoice, payment } = action.payload;
                 const index = state.invoices.findIndex(inv => inv._id === invoice._id);
                 if (index !== -1) {
                     state.invoices[index] = {
@@ -184,14 +215,28 @@ const billingSlice = createSlice({
                         status: invoice.status
                     };
                 }
+
+                // Add to payments list
+                if (payment) {
+                    // Add invoice number to payment for display since it might not be populated in response
+                    const paymentWithInvoice = {
+                        ...payment,
+                        invoiceId: {
+                            _id: invoice._id,
+                            invoiceNumber: invoice.invoiceNumber
+                        }
+                    };
+                    state.payments.unshift(paymentWithInvoice);
+                }
+
                 // Update current invoice if viewing
                 if (state.currentInvoice && state.currentInvoice._id === invoice._id) {
                     state.currentInvoice.paidAmount = invoice.paidAmount;
                     state.currentInvoice.status = invoice.status;
                     state.currentInvoice.payments = state.currentInvoice.payments || [];
-                    state.currentInvoice.payments.unshift(action.payload.payment);
+                    state.currentInvoice.payments.unshift(payment);
                 }
-                state.successMessage = `Payment of ₹${action.payload.payment.amount} recorded`;
+                state.successMessage = `Payment of ₹${payment.amount} recorded`;
             })
             .addCase(addPayment.rejected, (state, action) => {
                 state.actionLoading = false;
