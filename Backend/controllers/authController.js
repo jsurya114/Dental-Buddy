@@ -55,7 +55,7 @@ export const login = async (req, res) => {
             });
         }
 
-      
+
         if (!isClinicAdmin && user.lockUntil && user.lockUntil > Date.now()) {
             return res.status(403).json({
                 success: false,
@@ -106,8 +106,8 @@ export const login = async (req, res) => {
         // Cookies
         const cookieOptions = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict"
+            secure: process.env.NODE_ENV === "production", // Must be true for SameSite=None
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
         };
 
         res.cookie("jwt", accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 }); // 15 mins
@@ -127,7 +127,7 @@ export const login = async (req, res) => {
             permissions
         };
 
- 
+
         req.user = { userId: user._id };
 
         return res.status(200).json({
@@ -182,7 +182,7 @@ export const logout = async (req, res) => {
         const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict"
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
         };
         res.clearCookie("jwt", cookieOptions);
         res.clearCookie("refreshToken", cookieOptions);
