@@ -19,6 +19,13 @@ const imagingSchema = new mongoose.Schema({
         index: true
     },
 
+    clinicId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Clinic",
+        required: true,
+        index: true
+    },
+
     caseSheetId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "CaseSheet"

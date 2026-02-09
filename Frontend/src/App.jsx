@@ -29,8 +29,14 @@ import ReportsDashboard from "./pages/ReportsDashboard";
 import AppointmentsDashboard from "./pages/AppointmentsDashboard";
 import CaseSheets from "./pages/CaseSheets";
 import Prescriptions from "./pages/Prescriptions";
-import Imaging from "./pages/Imaging";
 import Billing from "./pages/Billing";
+import BillingCreate from "./pages/BillingCreate";
+import DentalIllustrations from "./pages/DentalIllustrations";
+import DentalAssistant from "./pages/DentalAssistant";
+import ImagingLayout from "./pages/imaging/ImagingLayout";
+import ImagingPatientList from "./pages/imaging/PatientList";
+import ImagingDetail from "./pages/imaging/ImagingDetail";
+
 
 function App() {
   const dispatch = useDispatch();
@@ -104,9 +110,19 @@ function App() {
         <Route path="appointments" element={<AppointmentsDashboard />} />
         <Route path="case-sheets" element={<CaseSheets />} />
         <Route path="prescriptions" element={<Prescriptions />} />
+        {/* Billing */}
         <Route path="billing" element={<Billing />} />
-        <Route path="imaging" element={<Imaging />} />
+        <Route path="billing/create/:patientId" element={<BillingCreate />} />
+
+        {/* Imaging Module */}
+        <Route path="imaging" element={<ImagingLayout />}>
+          <Route index element={<ImagingPatientList />} />
+          <Route path=":patientId" element={<ImagingDetail />} />
+        </Route>
+
         <Route path="reports" element={<ReportsDashboard />} />
+        <Route path="illustrations" element={<DentalIllustrations />} />
+        <Route path="assistant" element={<DentalAssistant />} />
 
         {/* Default redirect within /app */}
         <Route index element={<Navigate to="dashboard" replace />} />

@@ -20,6 +20,9 @@ import imagingRoutes from "./routes/imagingRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
+import illustrationRoutes from "./routes/illustrationRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
+
 
 dotenv.config();
 
@@ -44,6 +47,10 @@ app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 app.use(mongoSanitize()); // Custom sanitizer
 
+// Serve static files from uploads directory
+app.use("/uploads", express.static("uploads"));
+
+
 // Routes
 app.use("/api/public", publicRoutes);
 app.use("/api/auth", authRoutes);
@@ -59,6 +66,9 @@ app.use("/api/imaging", imagingRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/illustrations", illustrationRoutes);
+app.use("/api/search", searchRoutes);
+
 
 // Health check route
 app.get("/health", (req, res) => {

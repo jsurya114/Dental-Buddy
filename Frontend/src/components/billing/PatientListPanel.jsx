@@ -53,7 +53,7 @@ const PatientListPanel = ({ selectedPatientId, onSelectPatient }) => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-white border-r border-gray-200">
+        <div className="flex flex-col h-full bg-white">
             {/* Search Header */}
             <div className="p-4 border-b border-gray-100">
                 <div className="relative">

@@ -5,7 +5,6 @@ import { fetchPatientById, deactivatePatient } from "../redux/patientSlice";
 import { usePermissions } from "../hooks/usePermission";
 import CaseSheetTab from "../components/caseSheet/CaseSheetTab";
 import BillingTab from "../components/billing/BillingTab";
-import ImagingTab from "../components/imaging/ImagingTab";
 import PrescriptionTab from "../components/prescriptions/PrescriptionTab";
 
 const PatientProfile = () => {
@@ -40,9 +39,7 @@ const PatientProfile = () => {
     const tabs = [
         { id: "overview", label: "Overview", icon: "👤" },
         { id: "cases", label: "Case Sheets", icon: "📋" },
-        { id: "prescriptions", label: "Prescriptions", icon: "💊" },
-        // Only show Billing for Admin and Billing Staff
-        { id: "imaging", label: "Imaging", icon: "🔬" }
+        { id: "prescriptions", label: "Prescriptions", icon: "💊" }
     ];
 
     return (
@@ -95,6 +92,14 @@ const PatientProfile = () => {
                             >
                                 Deactivate
                             </button>
+                        )}
+                        {can("IMAGING", "VIEW") && (
+                            <Link
+                                to={`/app/imaging/${id}`}
+                                className="px-4 py-2 bg-teal-50 text-teal-600 rounded-xl hover:bg-teal-100 transition-colors font-medium flex items-center gap-2"
+                            >
+                                <span>🔬</span> Open Imaging
+                            </Link>
                         )}
                     </div>
                 </div>
@@ -171,8 +176,6 @@ const PatientProfile = () => {
                     <CaseSheetTab patientId={currentPatient._id} />
                 ) : activeTab === "billing" ? (
                     <BillingTab patientId={currentPatient._id} />
-                ) : activeTab === "imaging" ? (
-                    <ImagingTab patientId={currentPatient._id} />
                 ) : activeTab === "prescriptions" ? (
                     <PrescriptionTab
                         patientId={currentPatient._id}

@@ -67,6 +67,15 @@ const CommonDashboard = () => {
             resource: "IMAGING",
             action: "VIEW",
             color: "from-indigo-500 to-blue-600"
+        },
+        {
+            title: "Illustrations",
+            description: "Educational media",
+            icon: "🎨",
+            path: "/app/illustrations",
+            resource: "ILLUSTRATION",
+            action: "VIEW",
+            color: "from-fuchsia-500 to-pink-600"
         }
     ];
 

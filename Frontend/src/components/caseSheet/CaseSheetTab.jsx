@@ -9,8 +9,10 @@ import {
     clearError
 } from "../../redux/caseSheetSlice";
 import ProcedureSection from "./ProcedureSection";
+import CaseSheetSectionA from "./CaseSheetSectionA";
 
 const SECTIONS = [
+    { id: "section-a", key: "sectionA", label: "Section A: Patient Details", icon: "📄", permission: "CASE_PERSONAL" },
     { id: "personal-history", key: "personalHistory", label: "Personal History", icon: "📝", permission: "CASE_PERSONAL" },
     { id: "medical-history", key: "medicalHistory", label: "Medical History", icon: "🏥", permission: "CASE_MEDICAL" },
     { id: "dental-examination", key: "dentalExamination", label: "Dental Examination", icon: "🦷", permission: "CASE_EXAM" },
@@ -24,7 +26,7 @@ const CaseSheetTab = ({ patientId }) => {
     const dispatch = useDispatch();
     const { can } = usePermissions();
     const { currentCaseSheet, loading, error, successMessage, sectionLoading } = useSelector(state => state.caseSheet);
-    const [activeSection, setActiveSection] = useState("personal-history");
+    const [activeSection, setActiveSection] = useState("section-a");
     const [editMode, setEditMode] = useState(false);
     const [formData, setFormData] = useState({});
 
@@ -173,6 +175,15 @@ const CaseSheetTab = ({ patientId }) => {
                         </div>
                     )}
                 </div>
+
+                {/* Section A: Patient Details */}
+                {activeSection === "section-a" && (
+                    <CaseSheetSectionA
+                        formData={formData.sectionA || {}}
+                        onChange={(field, value) => updateFormData("sectionA", field, value)}
+                        readOnly={!editMode}
+                    />
+                )}
 
                 {/* Personal History Section */}
                 {activeSection === "personal-history" && (

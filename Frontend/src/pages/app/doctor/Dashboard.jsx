@@ -58,6 +58,24 @@ const DoctorDashboard = () => {
             action: "VIEW",
             color: "from-pink-500 to-rose-600"
         },
+        {
+            title: "Illustrations",
+            description: "Educational media",
+            icon: "🎨",
+            path: "/app/illustrations",
+            resource: "ILLUSTRATION",
+            action: "VIEW",
+            color: "from-fuchsia-500 to-pink-600"
+        },
+        {
+            title: "Dental Assistant",
+            description: "AI-powered search for dental info",
+            icon: "🤖",
+            path: "/app/assistant",
+            resource: null, // Always visible
+            action: null,
+            color: "from-indigo-500 to-blue-600"
+        },
         // {
         //     title: "Billing",
         //     description: "View patient billing",
@@ -70,7 +88,10 @@ const DoctorDashboard = () => {
     ];
 
     // Filter menu items based on permissions
-    const visibleMenuItems = menuItems.filter(item => can(item.resource, item.action));
+    const visibleMenuItems = menuItems.filter(item => {
+        if (!item.resource) return true;
+        return can(item.resource, item.action);
+    });
 
     return (
         <div>

@@ -8,6 +8,20 @@ const caseSheetSchema = new mongoose.Schema({
         index: true
     },
 
+    // Section A: Patient Basic Details
+    sectionA: {
+        opNumber: { type: String },
+        name: { type: String },
+        age: { type: Number },
+        gender: { type: String },
+        maritalStatus: { type: String },
+        phone: { type: String },
+        address: { type: String },
+        referredBy: { type: String },
+        visitDate: { type: Date, default: Date.now },
+        dentistName: { type: String }
+    },
+
     // Section 1: Personal History
     personalHistory: {
         chiefComplaint: { type: String, default: "" },

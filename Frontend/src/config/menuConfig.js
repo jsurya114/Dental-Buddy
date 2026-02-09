@@ -30,6 +30,20 @@ export const menuConfig = [
         module: "APPOINTMENT",
         action: "VIEW"
     },
+    {
+        label: "Illustrations",
+        path: "illustrations",
+        icon: "🎨",
+        module: "ILLUSTRATION",
+        action: "VIEW"
+    },
+    {
+        label: "Dental Assistant",
+        path: "assistant",
+        icon: "🤖",
+        module: null, // Open to all (or restrict if needed)
+        action: null
+    },
     // Case Sheets & Prescriptions are accessed via Patient Profile ONLY.
     {
         label: "Billing",
@@ -44,8 +58,7 @@ export const menuConfig = [
         label: "Imaging",
         icon: "🔬",
         module: "IMAGING",
-        action: "VIEW",
-        allowedRoles: ["CLINIC_ADMIN"] // Redirects to Patients
+        action: "VIEW"
     },
     {
         path: "reports",

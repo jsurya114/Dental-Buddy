@@ -10,6 +10,8 @@ import imagingReducer from "./imagingSlice";
 import reportReducer from "./reportSlice";
 import appointmentReducer from "./appointmentSlice";
 import prescriptionReducer from "./prescriptionSlice";
+import illustrationReducer from "./illustrationSlice";
+
 
 export const store = configureStore({
     reducer: {
@@ -23,7 +25,9 @@ export const store = configureStore({
         billing: billingReducer,
         imaging: imagingReducer,
         reports: reportReducer,
-        appointments: appointmentReducer
+        appointments: appointmentReducer,
+        illustrations: illustrationReducer
+
     }
 });
 

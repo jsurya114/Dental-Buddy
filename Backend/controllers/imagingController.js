@@ -92,12 +92,14 @@ export const uploadImaging = async (req, res) => {
             procedureId: procedureId || null,
             category,
             title,
+            title,
             description: description || "",
             fileKey: req.file.filename,
             originalName: req.file.originalname,
             fileType: req.file.mimetype,
             fileSize: req.file.size,
-            uploadedBy: req.user.userId
+            uploadedBy: req.user.userId,
+            clinicId: req.user.clinicId
         });
 
         await imaging.save();
@@ -134,7 +136,7 @@ export const getImagingByPatient = async (req, res) => {
             });
         }
 
-        const query = { patientId };
+        const query = { patientId, clinicId: req.user.clinicId };
         if (category) query.category = category;
 
         const imaging = await Imaging.find(query)

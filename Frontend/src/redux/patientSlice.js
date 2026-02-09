@@ -4,7 +4,7 @@ import axiosInstance from "../api/axios";
 // Fetch patients with pagination and search
 export const fetchPatients = createAsyncThunk(
     "patients/fetchPatients",
-    async ({ page = 1, limit = 20, search = "" }, { rejectWithValue }) => {
+    async ({ page = 1, limit = 20, search = "" } = {}, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get("/patients", {
                 params: { page, limit, search }

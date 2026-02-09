@@ -111,7 +111,7 @@ const PaymentModal = ({ invoice, onClose, onSave }) => {
 
 const BillingWorkspace = ({ patient }) => {
     const dispatch = useDispatch();
-    const { invoices, loading, actionLoading, successMessage, error } = useSelector(state => state.billing);
+    const { invoices, payments, loading, actionLoading, successMessage, error } = useSelector(state => state.billing);
     const { can } = usePermissions();
     const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState(null);
 
@@ -182,95 +182,107 @@ const BillingWorkspace = ({ patient }) => {
             <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                 <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                    {/* Left Col: Billing Form (8 cols) - Only for those who can CREATE invoices */}
+                    {/* Billing Form - Centered */}
                     {can("BILLING", "CREATE") && (
-                        <div className="lg:col-span-5">
-                            <FinancialBillingForm patient={patient} />
-                        </div>
-                    )}
+                        <div className="lg:col-span-8 lg:col-start-3 space-y-6">
+                            {/* 1. New Invoice Form */}
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                <FinancialBillingForm patient={patient} />
+                            </div>
 
-                    {/* Right Col: History (7 cols) - Adjust span if form is hidden */}
-                    <div className={can("BILLING", "CREATE") ? "lg:col-span-7 space-y-6" : "lg:col-span-12 space-y-6"}>
-                        {/* Invoices List */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-800 mb-4">Invoice History</h3>
+                            {/* 2. Pending Invoices & Payments */}
+                            {invoices.filter(inv => inv.status !== 'PAID').length > 0 && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                        <span>🕒</span> Pending Invoices
+                                    </h3>
+                                    <div className="space-y-6">
+                                        {invoices.filter(inv => inv.status !== 'PAID').map(invoice => {
+                                            // Get payments for this invoice
+                                            const invoicePayments = (payments || []).filter(p =>
+                                                (typeof p.invoiceId === 'string' ? p.invoiceId : p.invoiceId?._id) === invoice._id
+                                            );
 
-                            {successMessage && <div className="mb-4 text-green-600 bg-green-50 px-3 py-2 rounded-lg text-sm">{successMessage}</div>}
-                            {error && <div className="mb-4 text-red-600 bg-red-50 px-3 py-2 rounded-lg text-sm">{error}</div>}
+                                            return (
+                                                <div key={invoice._id} className="border border-gray-200 rounded-xl overflow-hidden">
+                                                    {/* Invoice Header */}
+                                                    <div className="bg-gray-50 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-bold text-gray-800">{invoice.invoiceNumber}</span>
+                                                                <span className="text-xs text-gray-500">• {new Date(invoice.createdAt).toLocaleDateString()}</span>
+                                                            </div>
+                                                            <div className="text-sm text-gray-600 mt-1">
+                                                                {invoice.treatmentDetails?.treatmentName || "General Treatment"}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-sm text-gray-500">Balance Due</div>
+                                                            <div className="text-xl font-bold text-red-600">
+                                                                ₹{(invoice.totalAmount - invoice.paidAmount).toFixed(2)}
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-                            {loading && !invoices.length ? (
-                                <p className="text-center py-4 text-gray-400">Loading...</p>
-                            ) : invoices.length === 0 ? (
-                                <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                                    <p className="text-gray-400 text-sm">No invoices found for this patient.</p>
-                                </div>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="bg-gray-50 text-gray-500 text-left">
-                                                <th className="p-3 rounded-l-lg">Date</th>
-                                                <th className="p-3">Treatment</th>
-                                                <th className="p-3 text-right">Amount</th>
-                                                <th className="p-3 text-center">Dr. Share</th>
-                                                <th className="p-3 text-right">Status</th>
-                                                <th className="p-3 rounded-r-lg">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-100">
-                                            {invoices.map(inv => (
-                                                <tr key={inv._id} className="hover:bg-gray-50/50">
-                                                    <td className="p-3 font-medium text-gray-700">
-                                                        {new Date(inv.createdAt).toLocaleDateString()}
-                                                    </td>
-                                                    <td className="p-3 text-gray-600">
-                                                        {inv.treatmentDetails?.treatmentName || "General"}
-                                                    </td>
-                                                    <td className="p-3 text-right font-bold text-gray-800">
-                                                        ₹{inv.totalAmount?.toFixed(2)}
-                                                    </td>
-                                                    <td className="p-3 text-center">
-                                                        {inv.itemizedCharges?.doctorCharges > 0 ? (
+                                                    {/* Payment History & Actions */}
+                                                    <div className="p-4 bg-white">
+                                                        {/* Progress Bar */}
+                                                        <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
+                                                            <div
+                                                                className="bg-teal-500 h-2 rounded-full transition-all duration-500"
+                                                                style={{ width: `${Math.min((invoice.paidAmount / invoice.totalAmount) * 100, 100)}%` }}
+                                                            ></div>
+                                                        </div>
+
+                                                        <div className="flex justify-between items-center mb-4">
+                                                            <div className="text-sm text-gray-600">
+                                                                <span className="font-medium text-gray-900">Total: ₹{invoice.totalAmount}</span>
+                                                                <span className="mx-2 text-gray-300">|</span>
+                                                                <span className="text-green-600">Paid: ₹{invoice.paidAmount}</span>
+                                                            </div>
                                                             <button
-                                                                onClick={() => handleToggleDoctorPayment(inv._id)}
-                                                                className={`px-2 py-0.5 rounded text-[10px] font-bold border ${inv.isDoctorPaid
-                                                                    ? "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200"
-                                                                    : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200"
-                                                                    }`}
-                                                                title="Click to toggle Doctor Payout status"
+                                                                onClick={() => setSelectedInvoiceForPayment(invoice)}
+                                                                className="px-4 py-2 bg-teal-600 text-white text-sm font-bold rounded-lg hover:bg-teal-700 shadow-sm transition-colors"
                                                             >
-                                                                {inv.isDoctorPaid ? "PAID OUT" : "PENDING"}
+                                                                Pay Now
                                                             </button>
-                                                        ) : (
-                                                            <span className="text-gray-300 text-xs">-</span>
+                                                        </div>
+
+                                                        {/* Previous Payments List */}
+                                                        {invoicePayments.length > 0 && (
+                                                            <div className="mt-4 border-t border-gray-100 pt-3">
+                                                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Payment History</h4>
+                                                                <div className="space-y-2">
+                                                                    {invoicePayments.map(payment => (
+                                                                        <div key={payment._id} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded-lg">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="text-lg">{
+                                                                                    payment.mode === 'CASH' ? '💵' :
+                                                                                        payment.mode === 'CARD' ? '💳' :
+                                                                                            payment.mode === 'UPI' ? '📱' : '🏦'
+                                                                                }</span>
+                                                                                <span className="font-medium text-gray-700">{payment.mode}</span>
+                                                                                {payment.reference && (
+                                                                                    <span className="text-xs text-gray-400">({payment.reference})</span>
+                                                                                )}
+                                                                            </div>
+                                                                            <div className="font-bold text-gray-800">
+                                                                                ₹{payment.amount.toFixed(2)}
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
                                                         )}
-                                                    </td>
-                                                    <td className="p-3 text-right">
-                                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${inv.status === 'PAID' ? 'bg-green-100 text-green-700' :
-                                                            inv.status === 'PARTIALLY_PAID' ? 'bg-yellow-100 text-yellow-700' :
-                                                                'bg-red-100 text-red-700'
-                                                            }`}>
-                                                            {inv.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="p-3 text-right">
-                                                        {(inv.status !== 'PAID' && can("BILLING", "CREATE")) && (
-                                                            <button
-                                                                onClick={() => setSelectedInvoiceForPayment(inv)}
-                                                                className="px-3 py-1 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 text-xs font-medium transition-colors"
-                                                            >
-                                                                Pay
-                                                            </button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             )}
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

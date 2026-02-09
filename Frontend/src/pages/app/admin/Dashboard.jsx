@@ -20,7 +20,7 @@ const AdminDashboard = () => {
             path: "/app/roles",
             resource: "ROLE_MANAGEMENT",
             action: "VIEW",
-           
+
         },
         {
             title: "Manage Users",
@@ -29,7 +29,7 @@ const AdminDashboard = () => {
             path: "/app/users",
             resource: "USER_MANAGEMENT",
             action: "VIEW",
-        
+
         },
         {
             title: "Patients",
@@ -38,7 +38,7 @@ const AdminDashboard = () => {
             path: "/app/patients",
             resource: "PATIENT",
             action: "VIEW",
-         
+
         },
         {
             title: "Appointments",
@@ -47,7 +47,7 @@ const AdminDashboard = () => {
             path: "/app/appointments",
             resource: "APPOINTMENT",
             action: "VIEW",
-          
+
         },
         {
             title: "Billing",
@@ -56,7 +56,15 @@ const AdminDashboard = () => {
             path: "/app/billing",
             resource: "BILLING",
             action: "VIEW",
-            
+
+        },
+        {
+            title: "Illustrations",
+            description: "Educational videos and images",
+            icon: "🎨",
+            path: "/app/illustrations",
+            resource: "ILLUSTRATION",
+            action: "VIEW",
         },
         {
             title: "Reports",
@@ -65,12 +73,24 @@ const AdminDashboard = () => {
             path: "/app/reports",
             resource: "REPORTS",
             action: "VIEW",
-            
+
+        },
+        {
+            title: "Dental Assistant",
+            description: "AI-powered search for dental info",
+            icon: "🤖",
+            path: "/app/assistant",
+            resource: null,
+            action: null,
+            color: "from-indigo-500 to-blue-600"
         }
     ];
 
     // Filter menu items based on permissions
-    const visibleMenuItems = menuItems.filter(item => can(item.resource, item.action));
+    const visibleMenuItems = menuItems.filter(item => {
+        if (!item.resource) return true;
+        return can(item.resource, item.action);
+    });
 
     return (
         <div>
