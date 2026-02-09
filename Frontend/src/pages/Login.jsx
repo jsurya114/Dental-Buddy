@@ -22,7 +22,13 @@ const Login = () => {
     });
 
     // Convert URL slug to role code: clinic-admin -> CLINIC_ADMIN
-    const roleCode = role.toUpperCase().replace(/-/g, "_");
+    const roleCode = role ? role.toUpperCase().replace(/-/g, "_") : "";
+
+    useEffect(() => {
+        if (!role) {
+            navigate("/");
+        }
+    }, [role, navigate]);
 
     // Fetch role info on mount
     useEffect(() => {

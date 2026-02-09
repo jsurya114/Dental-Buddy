@@ -27,6 +27,10 @@ const RoleSelection = () => {
     }, []);
 
     const handleRoleClick = (role) => {
+        if (!role || !role.code) {
+            console.error("Invalid role data:", role);
+            return;
+        }
         // Convert role code to URL-friendly format: CLINIC_ADMIN -> clinic-admin
         const roleSlug = role.code.toLowerCase().replace(/_/g, "-");
         navigate(`/login/${roleSlug}`);
