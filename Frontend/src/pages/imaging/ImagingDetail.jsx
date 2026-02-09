@@ -101,7 +101,8 @@ const ImagingDetail = () => {
 
     const getPreviewUrl = (fileId) => {
         const token = localStorage.getItem("accessToken");
-        return `http://localhost:3125/api/imaging/${fileId}/preview?token=${token}`;
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3125";
+        return `${baseUrl}/api/imaging/${fileId}/preview?token=${token}`;
     };
 
     const displayCategories = activeCategory

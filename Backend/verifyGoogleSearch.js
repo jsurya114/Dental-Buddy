@@ -6,7 +6,8 @@ import connectDB from "./config/db.js";
 
 dotenv.config();
 
-const API_URL = "http://localhost:3125/api";
+const PORT = process.env.PORT || 3125;
+const API_URL = `http://localhost:${PORT}/api`;
 const TEST_USER = {
     loginId: "verify_google_" + Date.now(),
     password: "password123",

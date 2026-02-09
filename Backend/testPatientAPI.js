@@ -8,7 +8,8 @@ import connectDB from "./config/db.js";
 
 dotenv.config();
 
-const API_URL = "http://localhost:3125/api";
+const PORT = process.env.PORT || 3125;
+const API_URL = `http://localhost:${PORT}/api`;
 const TEST_USER = {
     loginId: "test_admin_" + Date.now(),
     password: "password123",
@@ -20,10 +21,10 @@ const runTest = async () => {
     console.log("🚀 Starting Patient Module Verification...");
 
     try {
-      
+
         await connectDB();
 
-     
+
         const hashedPassword = await bcrypt.hash(TEST_USER.password, 10);
         const admin = await ClinicAdmin.create({
             ...TEST_USER,
