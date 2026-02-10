@@ -108,7 +108,7 @@ const RoleSelection = () => {
 
             {/* Footer */}
             <p className="relative mt-12 text-gray-400 text-sm">
-                Developed by <span className="text-gray-600 font-medium">Jayasurya</span>
+                <span className="text-gray-600 font-medium">Dental Buddy</span>
             </p>
         </div>
     );

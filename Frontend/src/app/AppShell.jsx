@@ -29,7 +29,7 @@ const AppShell = () => {
                 {/* Footer */}
                 <footer className="bg-white border-t border-gray-200 py-3 text-center">
                     <p className="text-gray-500 text-sm font-medium">
-                        Developed by <span className="text-indigo-600">Jayasurya</span>
+                        <span className="text-indigo-600">Dental Buddy</span>
                     </p>
                 </footer>
             </div>

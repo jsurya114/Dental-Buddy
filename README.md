@@ -103,4 +103,4 @@ This project is licensed under the MIT License.
 
 ---
 
-**Developed with ❤️ by Jayasurya**
+**Dental Buddy**

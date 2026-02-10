@@ -212,7 +212,7 @@ const Login = () => {
 
                 {/* Footer */}
                 <p className="text-center mt-8 text-white/60 text-sm">
-                    Developed by <span className="text-white font-medium">Jayasurya</span>
+                    <span className="text-white font-medium">Dental Buddy</span>
                 </p>
             </div>
         </div>
