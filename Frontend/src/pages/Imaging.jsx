@@ -1,24 +1,26 @@
 import { useNavigate } from "react-router-dom";
+import { Microscope, Users } from "lucide-react";
 
 export default function Imaging() {
     const navigate = useNavigate();
 
     return (
-        <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mb-4 text-3xl shadow-sm text-teal-600">
-                📷
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 animate-fade-in">
+            <div className="w-20 h-20 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm ring-1 ring-teal-100">
+                <Microscope className="w-10 h-10 text-teal-600" />
             </div>
-            <h2 className="text-xl font-semibold mb-2 text-gray-800">Imaging</h2>
-            <p className="text-gray-500 mb-6 max-w-md">
-                Imaging records (X-rays, photos, reports) are linked to a patient.
-                Please select a patient to view or upload imaging.
+            <h2 className="text-2xl font-bold mb-3 text-gray-800">Diagnostic Imaging</h2>
+            <p className="text-gray-500 mb-8 max-w-md text-lg leading-relaxed">
+                X-rays, scans, and other imaging records are stored within patient profiles.
+                Select a patient to access their imaging history.
             </p>
 
             <button
                 onClick={() => navigate("/app/patients")}
-                className="px-6 py-2 bg-teal-600 text-white rounded-lg shadow-md hover:bg-teal-700 transition-colors font-medium flex items-center gap-2"
+                className="px-8 py-3 bg-teal-600 text-white rounded-xl shadow-lg shadow-teal-600/20 hover:bg-teal-700 hover:shadow-xl hover:shadow-teal-600/30 transition-all font-medium flex items-center gap-3 group"
             >
-                <span>👥</span> Go to Patients
+                <Users className="w-5 h-5" />
+                <span>Go to Patient Directory</span>
             </button>
         </div>
     );

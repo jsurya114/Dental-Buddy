@@ -84,7 +84,18 @@ const patientSchema = new mongoose.Schema({
     updatedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
-    }
+    },
+
+    toothChart: [{
+        toothNumber: { type: String, required: true },
+        status: {
+            type: String,
+            enum: ["HEALTHY", "DECAY", "FILLED", "RCTS", "CROWN", "MISSING", "IMPLANT", "EXTRACTION_PLANNED", "IN_TREATMENT"],
+            default: "HEALTHY"
+        },
+        notes: String,
+        updatedAt: { type: Date, default: Date.now }
+    }]
 }, {
     timestamps: true
 });

@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, clearError, clearSuccess } from "../redux/userSlice";
 import axiosInstance from "../api/axios";
+import { Save, User, Key, Shield, Eye, EyeOff, CheckCircle2, ChevronLeft, Loader2, AlertCircle } from "lucide-react";
 
+/**
+ * UserEdit
+ * Reskinned to Sky Blue Theme
+ */
 const UserEdit = () => {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -11,7 +16,10 @@ const UserEdit = () => {
     const { loading, error, success } = useSelector((state) => state.users);
 
     const [roles, setRoles] = useState([]);
-    const [pageLoading, setPageLoading] = useState(true);
+    const [rolesLoading, setRolesLoading] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
+
     const [formData, setFormData] = useState({
         fullName: "",
         loginId: "",
@@ -21,44 +29,45 @@ const UserEdit = () => {
     });
 
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch roles
+                const rolesResponse = await axiosInstance.get("/admin/roles");
+                const availableRoles = (rolesResponse.data.roles || []).filter(
+                    r => !r.isSystemRole && r.isActive
+                );
+                setRoles(availableRoles);
+
+                // Fetch user
+                const userResponse = await axiosInstance.get(`/admin/users/${id}`);
+                const user = userResponse.data.user;
+
+                setFormData({
+                    fullName: user.fullName || "",
+                    loginId: user.loginId || "",
+                    password: "", // Leave blank to keep current
+                    roleCode: user.roleCode || "",
+                    isActive: user.isActive ?? true
+                });
+
+            } catch (err) {
+                console.error("Failed to fetch data:", err);
+            } finally {
+                setRolesLoading(false);
+                setInitialLoading(false);
+            }
+        };
+
+        fetchData();
         dispatch(clearError());
         dispatch(clearSuccess());
-        fetchData();
-    }, [id, dispatch]);
+    }, [dispatch, id]);
 
     useEffect(() => {
         if (success) {
-            navigate("/clinic-admin/users");
+            navigate("/app/users");
         }
     }, [success, navigate]);
-
-    const fetchData = async () => {
-        try {
-            const [userRes, rolesRes] = await Promise.all([
-                axiosInstance.get(`/admin/users/${id}`),
-                axiosInstance.get("/admin/roles")
-            ]);
-
-            const user = userRes.data.user;
-            setFormData({
-                fullName: user.fullName || "",
-                loginId: user.loginId || "",
-                password: "",
-                roleCode: user.roleCode || "",
-                isActive: user.isActive ?? true
-            });
-
-            // Filter out system roles
-            const availableRoles = (rolesRes.data.roles || []).filter(
-                r => !r.isSystemRole && r.isActive
-            );
-            setRoles(availableRoles);
-        } catch (err) {
-            console.error("Failed to fetch data:", err);
-        } finally {
-            setPageLoading(false);
-        }
-    };
 
     const handleChange = (e) => {
         const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
@@ -72,74 +81,65 @@ const UserEdit = () => {
         e.preventDefault();
         dispatch(clearError());
 
-        if (!formData.fullName.trim()) {
-            return alert("Full name is required");
-        }
-        if (!formData.loginId.trim()) {
-            return alert("Login ID is required");
-        }
-        if (!formData.roleCode) {
-            return alert("Please select a role");
-        }
+        if (!formData.fullName.trim()) return alert("Full name is required");
+        if (!formData.loginId.trim()) return alert("Login ID is required");
+        if (!formData.roleCode) return alert("Please select a role");
 
-        // Only send password if it was changed
-        const userData = { ...formData };
-        if (!userData.password) {
-            delete userData.password;
-        }
+        const updateData = { ...formData };
+        if (!updateData.password) delete updateData.password;
 
-        dispatch(updateUser({ id, userData }));
+        dispatch(updateUser({ id, userData: updateData }));
     };
 
-    if (pageLoading) {
+    if (initialLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
-                <div className="w-10 h-10 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center mb-4">
+                    <Loader2 className="w-8 h-8 text-sky-600 animate-spin" />
+                </div>
+                <p className="text-gray-500 font-medium animate-pulse">Loading User Details...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
+        <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center gap-3">
-                            <Link to="/clinic-admin/dashboard" className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
-                                    <span className="text-xl">🦷</span>
-                                </div>
-                                <div>
-                                    <h1 className="text-lg font-bold text-gray-800">Dental Buddy</h1>
-                                    <p className="text-xs text-gray-500">Edit User</p>
-                                </div>
-                            </Link>
-                        </div>
-                        <Link
-                            to="/clinic-admin/users"
-                            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium text-sm"
-                        >
-                            ← Back to Users
-                        </Link>
-                    </div>
+            <div className="flex items-center justify-between">
+                <div>
+                    <button
+                        onClick={() => navigate("/app/users")}
+                        className="text-sky-500 hover:text-sky-700 flex items-center gap-1 text-sm font-bold mb-2 transition-colors"
+                    >
+                        <ChevronLeft className="w-4 h-4" /> Back to Users
+                    </button>
+                    <h1 className="text-3xl font-bold text-sky-950 tracking-tight">Edit User</h1>
+                    <p className="text-sky-700/80 mt-1">Update account details for <span className="font-semibold text-sky-900">{formData.fullName}</span></p>
                 </div>
-            </header>
+            </div>
 
-            <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit User</h2>
+            <div className="bg-white rounded-[2rem] shadow-xl shadow-sky-900/5 border border-sky-100 overflow-hidden">
+                {/* Progress Bar */}
+                <div className="h-1 bg-sky-50 w-full">
+                    <div className="h-full bg-sky-500 w-2/3"></div>
+                </div>
 
-                    {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-                            {error}
-                        </div>
-                    )}
+                {error && (
+                    <div className="bg-red-50 border-b border-red-100 text-red-700 p-4 text-sm flex items-center gap-2 font-medium">
+                        <AlertCircle className="w-5 h-5" /> {error}
+                    </div>
+                )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Full Name */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <form onSubmit={handleSubmit} className="p-8 space-y-8">
+
+                    {/* Basic Details */}
+                    <div className="space-y-6">
+                        <h2 className="text-lg font-bold text-sky-900 flex items-center gap-2 pb-2 border-b border-sky-100">
+                            <User className="w-5 h-5 text-sky-600" /> Account Details
+                        </h2>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-sky-800">
                                 Full Name <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -147,95 +147,129 @@ const UserEdit = () => {
                                 name="fullName"
                                 value={formData.fullName}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                placeholder="e.g., Dr. Alice Smith"
+                                className="w-full px-4 py-3 bg-sky-50/50 border border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all font-medium text-sky-900 placeholder-sky-300"
                             />
                         </div>
 
-                        {/* Login ID */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Login ID <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="loginId"
-                                value={formData.loginId}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-sky-800">
+                                    Login ID <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sky-400" />
+                                    <input
+                                        type="text"
+                                        name="loginId"
+                                        value={formData.loginId}
+                                        onChange={handleChange}
+                                        placeholder="e.g., dralice"
+                                        className="w-full pl-10 pr-4 py-3 bg-sky-50/50 border border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all font-mono text-sm text-sky-900 placeholder-sky-300"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-sky-800">
+                                    Assign Role <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sky-400 pointer-events-none" />
+                                    {rolesLoading ? (
+                                        <div className="w-full px-4 py-3 bg-sky-50 border border-sky-200 rounded-xl text-sky-400 text-sm">
+                                            Loading roles...
+                                        </div>
+                                    ) : (
+                                        <select
+                                            name="roleCode"
+                                            value={formData.roleCode}
+                                            onChange={handleChange}
+                                            className="w-full pl-10 pr-10 py-3 bg-sky-50/50 border border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all appearance-none cursor-pointer text-sky-900"
+                                        >
+                                            <option value="">Select a role...</option>
+                                            {roles.map((role) => (
+                                                <option key={role._id} value={role.code}>
+                                                    {role.displayName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <svg className="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Password */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Password
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-sky-800 flex items-center justify-between">
+                                <span>Password</span>
+                                <span className="text-xs font-normal text-sky-400">Leave blank to keep current</span>
                             </label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Leave blank to keep current password"
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                            />
-                            <p className="mt-1 text-sm text-gray-500">Leave blank to keep current password</p>
+                            <div className="relative">
+                                <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sky-400" />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Enter new password to change"
+                                    className="w-full pl-10 pr-12 py-3 bg-sky-50/50 border border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sky-900 placeholder-sky-300"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-sky-400 hover:text-sky-600 transition-colors p-1"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
+                    </div>
 
-                        {/* Role Selection */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Role <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                                name="roleCode"
-                                value={formData.roleCode}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                            >
-                                <option value="">Select a role</option>
-                                {roles.map((role) => (
-                                    <option key={role._id} value={role.code}>
-                                        {role.displayName}
-                                    </option>
-                                ))}
-                            </select>
+                    {/* Section 2: Status */}
+                    <div className="space-y-6">
+                        <div className="bg-sky-50 border border-sky-200 rounded-2xl p-5 flex items-start gap-4 hover:bg-sky-100/50 transition-colors cursor-pointer" onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}>
+                            <div className={`mt-1 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${formData.isActive ? 'bg-sky-600 border-sky-600' : 'bg-white border-gray-300'}`}>
+                                {formData.isActive && <CheckCircle2 className="w-4 h-4 text-white" />}
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-bold text-sky-900">Active Account</h4>
+                                <p className="text-sm text-sky-600/80 mt-1">
+                                    User can access the system. Disabling will immediately revoke access.
+                                </p>
+                            </div>
                         </div>
+                    </div>
 
-                        {/* Active Status */}
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="checkbox"
-                                name="isActive"
-                                id="isActive"
-                                checked={formData.isActive}
-                                onChange={handleChange}
-                                className="w-5 h-5 text-teal-500 border-gray-300 rounded focus:ring-teal-500"
-                            />
-                            <label htmlFor="isActive" className="text-sm font-semibold text-gray-700">
-                                User is Active
-                            </label>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex gap-4 pt-4">
-                            <button
-                                type="button"
-                                onClick={() => navigate("/clinic-admin/users")}
-                                className="flex-1 px-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-cyan-700 transition-all disabled:opacity-50"
-                            >
-                                {loading ? "Saving..." : "Save Changes"}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </main>
+                    {/* Footer */}
+                    <div className="pt-6 flex items-center justify-end gap-4 border-t border-sky-100">
+                        <button
+                            type="button"
+                            onClick={() => navigate("/app/users")}
+                            className="px-6 py-3 text-sky-700 hover:bg-sky-50 rounded-xl font-bold transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="px-8 py-3 bg-sky-600 text-white rounded-xl shadow-lg shadow-sky-600/20 hover:bg-sky-700 hover:shadow-xl hover:shadow-sky-600/30 transition-all font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                        >
+                            {loading ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" /> Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-5 h-5" /> Save Changes
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

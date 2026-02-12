@@ -4,7 +4,8 @@ import {
     getAppointments,
     updateAppointmentStatus,
     updateAppointment,
-    cancelAppointment
+    cancelAppointment,
+    deleteAppointment
 } from "../controllers/appointmentController.js";
 import auth from "../middleware/authMiddleware.js";
 import { can } from "../middleware/permissionMiddleware.js";
@@ -49,6 +50,14 @@ router.patch(
     auth,
     can("APPOINTMENT", "DELETE"),
     cancelAppointment
+);
+
+// Delete Appointment - Permanent
+router.delete(
+    "/:id",
+    auth,
+    can("APPOINTMENT", "DELETE"),
+    deleteAppointment
 );
 
 export default router;

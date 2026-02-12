@@ -72,10 +72,24 @@ export const listPatients = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
         const search = req.query.search || "";
+        const view = req.query.view || "all";
         const skip = (page - 1) * limit;
 
+        const query = {};
 
-        const query = { isActive: true };
+        // Filter Logic
+        if (view === "active") {
+            query.isActive = true;
+        } else if (view === "new") {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            query.createdAt = { $gte: thirtyDaysAgo };
+            query.isActive = true;
+        } else {
+            // view === 'all' - Show all patients (active & inactive)
+            // If you want 'all' to be only active, uncomment next line:
+            // query.isActive = true; 
+        }
 
         if (search) {
             query.$or = [
@@ -243,10 +257,68 @@ export const deactivatePatient = async (req, res) => {
     }
 };
 
+/**
+ * Handle Tooth Chart
+ */
+export const getToothChart = async (req, res) => {
+    try {
+        const patient = await Patient.findById(req.params.id).select("toothChart");
+        if (!patient) return res.status(404).json({ success: false, message: "Patient not found" });
+
+        res.json({
+            success: true,
+            toothChart: patient.toothChart || []
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Failed to fetch tooth chart" });
+    }
+};
+
+export const updateToothStatus = async (req, res) => {
+    try {
+        const { id, toothNumber } = req.params;
+        const { status, notes } = req.body;
+
+        const patient = await Patient.findById(id);
+        if (!patient) return res.status(404).json({ success: false, message: "Patient not found" });
+
+        // Find existing tooth or create new record
+        const toothIndex = patient.toothChart.findIndex(t => t.toothNumber === toothNumber);
+
+        if (toothIndex > -1) {
+            // Update existing
+            patient.toothChart[toothIndex].status = status;
+            patient.toothChart[toothIndex].notes = notes;
+            patient.toothChart[toothIndex].updatedAt = new Date();
+        } else {
+            // Add new
+            patient.toothChart.push({
+                toothNumber,
+                status,
+                notes,
+                updatedAt: new Date()
+            });
+        }
+
+        await patient.save();
+
+        res.json({
+            success: true,
+            message: `Tooth ${toothNumber} updated successfully`,
+            toothChart: patient.toothChart
+        });
+    } catch (error) {
+        console.error("Update tooth status error:", error);
+        res.status(500).json({ success: false, message: "Failed to update tooth status" });
+    }
+};
+
 export default {
     createPatient,
     listPatients,
     getPatient,
     updatePatient,
-    deactivatePatient
+    deactivatePatient,
+    getToothChart,
+    updateToothStatus
 };

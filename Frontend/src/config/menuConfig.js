@@ -1,85 +1,73 @@
-/**
- * Menu Configuration - Permission-driven navigation items
- * 
- * Each menu item has:
- * - label: Display text
- * - path: Route path (relative to /app/)
- * - icon: Emoji icon for the menu
- * - module: Permission module (null = always visible)
- * - action: Permission action (typically "VIEW")
- */
 export const menuConfig = [
     {
         label: "Dashboard",
         path: "dashboard",
-        icon: "🏠",
-        module: null, // Always visible
+        icon: "LayoutDashboard",
+        module: null,
         action: null
     },
     {
         label: "Patients",
         path: "patients",
-        icon: "🏥",
+        icon: "Users",
         module: "PATIENT",
         action: "VIEW"
     },
     {
         label: "Appointments",
         path: "appointments",
-        icon: "📅",
+        icon: "Calendar",
         module: "APPOINTMENT",
         action: "VIEW"
     },
     {
         label: "Illustrations",
         path: "illustrations",
-        icon: "🎨",
+        icon: "Image",
         module: "ILLUSTRATION",
         action: "VIEW"
     },
     {
         label: "Dental Assistant",
         path: "assistant",
-        icon: "🤖",
-        module: null, // Open to all (or restrict if needed)
+        icon: "Bot",
+        module: null,
         action: null
     },
-    // Case Sheets & Prescriptions are accessed via Patient Profile ONLY.
     {
         label: "Billing",
         path: "billing",
-        icon: "💰",
+        icon: "Receipt",
         module: "BILLING",
         action: "VIEW",
-        allowedRoles: ["CLINIC_ADMIN"] // Redirects to Patients
+        allowedRoles: ["CLINIC_ADMIN"]
     },
     {
         path: "imaging",
         label: "Imaging",
-        icon: "🔬",
+        icon: "Microscope",
         module: "IMAGING",
         action: "VIEW"
     },
     {
         path: "reports",
         label: "Analytics",
-        icon: "📊",
+        icon: "BarChart3",
         module: "REPORTS",
         action: ["FINANCIAL", "CLINICAL", "ADMIN"],
         allowedRoles: ["CLINIC_ADMIN", "BILLING_STAFF"]
     },
-    // Admin-only items
     {
         label: "Manage Roles",
         path: "roles",
-        icon: "🛡️",
+        icon: "Shield",
         module: "ROLE_MANAGEMENT",
         action: "VIEW"
     },
     {
         label: "Manage Users",
         path: "users",
-        icon: "👥",
+        icon: "UserCog",
         module: "USER_MANAGEMENT",
         action: "VIEW"
     }

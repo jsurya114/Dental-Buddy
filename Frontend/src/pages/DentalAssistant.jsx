@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Mic, MicOff, Info } from "lucide-react";
+import { Bot, Mic, MicOff, Info } from "lucide-react";
 
 
 const DentalAssistant = () => {
@@ -26,6 +26,11 @@ const DentalAssistant = () => {
             script.id = scriptId;
             script.async = true;
             document.body.appendChild(script);
+        } else {
+            // If already loaded (e.g. navigated back), we must tell Google to re-check the DOM
+            if (window.google?.search?.cse?.element?.go) {
+                window.google.search.cse.element.go();
+            }
         }
 
         // 3. Setup Speech Recognition
@@ -51,17 +56,27 @@ const DentalAssistant = () => {
             recognitionRef.current.onend = () => setIsListening(false);
         }
 
-        // Cleanup script on unmount (optional, but good for SPA)
+        // 4. Force Placeholder (Google script can be stubborn)
+        const placeholderInterval = setInterval(() => {
+            const input = document.querySelector("input.gsc-input");
+            if (input) {
+                input.placeholder = "Search for procedures, protocols, or drug info...";
+            } else if (window.google?.search?.cse?.element?.go) {
+                // Double check re-render if it still hasn't appeared
+                window.google.search.cse.element.go();
+            }
+        }, 1000);
+
         return () => {
-          
+            clearInterval(placeholderInterval);
         };
     }, [cx]);
 
- 
+
     const fillAndSearch = (text) => {
         if (!text) return;
 
-     
+
         const input = document.querySelector("input.gsc-input");
         const btn = document.querySelector("button.gsc-search-button");
 
@@ -121,23 +136,27 @@ const DentalAssistant = () => {
         <div className="max-w-5xl mx-auto min-h-[80vh] flex flex-col p-4">
 
             {/* Header */}
-            <div className="flex flex-col items-center mb-8 mt-10">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">Dental Assistant</h1>
-                <p className="text-gray-500">Powered by Google Search</p>
+            <div className="flex flex-col items-center mb-6 sm:mb-8 mt-4 sm:mt-10 text-center px-4">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-sky-100 rounded-3xl flex items-center justify-center text-sky-600 mb-4 shadow-inner">
+                    <Bot size={40} className="sm:hidden" />
+                    <Bot size={48} className="hidden sm:block" />
+                </div>
+                <h1 className="text-2xl sm:text-4xl font-black text-sky-950 tracking-tight mb-2 uppercase">Dental Assistant</h1>
+                <p className="text-sky-700/60 text-sm sm:text-lg font-medium">Your AI-powered clinical knowledge base</p>
             </div>
 
             {/* Voice Control - Floating or Centered */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-6 px-4">
                 <button
                     onClick={toggleListening}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-md transition-all ${isListening
-                        ? "bg-red-500 text-white animate-pulse"
-                        : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                    className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl transition-all w-full sm:w-auto justify-center ${isListening
+                        ? "bg-rose-500 text-white animate-pulse shadow-rose-500/30"
+                        : "bg-white text-sky-700 hover:bg-sky-50 border border-sky-100 shadow-sky-900/5"
                         }`}
                 >
-                    {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                    <span className="font-medium">
-                        {isListening ? "Listening..." : "Tap to Speak"}
+                    {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5 text-sky-500" />}
+                    <span className="font-bold tracking-tight">
+                        {isListening ? "Listening Now..." : "Ask with Voice"}
                     </span>
                 </button>
             </div>
@@ -152,7 +171,7 @@ const DentalAssistant = () => {
                    The div below is where Google injects the search box and results.
                    We use 'data-gname' to potentially target it if we have multiple.
                 */}
-                <div className="gcse-search" data-gname="dental-search"></div>
+                <div className="gcse-search" data-gname="dental-search" data-placeholder="Search for procedures, protocols, or drug info..."></div>
             </div>
 
             {/* Disclaimer */}

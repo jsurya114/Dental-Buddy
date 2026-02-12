@@ -10,46 +10,22 @@ import {
     clearSuccessMessage,
     clearError
 } from "../../redux/procedureSlice";
+import { Plus, Edit2, Play, CheckCircle2, XCircle, AlertCircle, Loader2, Save, X, Trash2, StickyNote, IndianRupee } from "lucide-react";
 
 const COMMON_PROCEDURES = [
-    "Scaling",
-    "Polishing",
-    "Filling",
-    "Extraction",
-    "Root Canal Treatment (RCT)",
-    "Crown",
-    "Bridge",
-    "Implant",
-    "Denture",
-    "Whitening",
-    "X-Ray",
-    "Consultation"
+    "Scaling", "Polishing", "Filling", "Extraction",
+    "Root Canal Treatment (RCT)", "Crown", "Bridge",
+    "Implant", "Denture", "Whitening", "X-Ray", "Consultation"
 ];
 
 const STATUS_CONFIG = {
-    PLANNED: {
-      
-        icon: "📋",
-        label: "Planned"
-    },
-    IN_PROGRESS: {
-     
-        icon: "⏳",
-        label: "In Progress"
-    },
-    COMPLETED: {
-       
-        icon: "✓",
-        label: "Completed"
-    },
-    CANCELLED: {
-  
-        icon: "✗",
-        label: "Cancelled"
-    }
+    PLANNED: { icon: StickyNote, label: "Planned", color: "bg-gray-100 text-gray-600 border-gray-200", ring: "ring-gray-100" },
+    IN_PROGRESS: { icon: Loader2, label: "In Progress", color: "bg-amber-50 text-amber-700 border-amber-100", ring: "ring-amber-100" },
+    COMPLETED: { icon: CheckCircle2, label: "Completed", color: "bg-emerald-50 text-emerald-700 border-emerald-100", ring: "ring-emerald-100" },
+    CANCELLED: { icon: XCircle, label: "Cancelled", color: "bg-red-50 text-red-700 border-red-100", ring: "ring-red-100" }
 };
 
-const ProcedureSection = ({ caseSheetId, patientId }) => {
+const ProcedureSection = ({ caseSheetId, patientId, autoFillTooth, onClearAutoFill }) => {
     const dispatch = useDispatch();
     const { can } = usePermissions();
     const { procedures, loading, actionLoading, error, successMessage } = useSelector(state => state.procedures);
@@ -64,19 +40,33 @@ const ProcedureSection = ({ caseSheetId, patientId }) => {
         isBillable: true
     });
 
+    // Handle Auto-fill from Tooth Chart
+    useEffect(() => {
+        if (autoFillTooth) {
+            setFormData(prev => ({
+                ...prev,
+                toothNumber: autoFillTooth
+            }));
+            setShowAddModal(true);
+
+            // Clear the trigger so it doesn't pop up again on re-render
+            onClearAutoFill();
+        }
+    }, [autoFillTooth, onClearAutoFill]);
+
     useEffect(() => {
         if (caseSheetId) {
             dispatch(fetchProceduresByCaseSheet(caseSheetId));
         }
     }, [dispatch, caseSheetId]);
 
+    // Clear messages
     useEffect(() => {
         if (successMessage) {
             const timer = setTimeout(() => dispatch(clearSuccessMessage()), 3000);
             return () => clearTimeout(timer);
         }
     }, [successMessage, dispatch]);
-
     useEffect(() => {
         if (error) {
             const timer = setTimeout(() => dispatch(clearError()), 5000);
@@ -124,17 +114,13 @@ const ProcedureSection = ({ caseSheetId, patientId }) => {
         resetForm();
     };
 
-    const handleStartProcedure = async (procedure) => {
-        await dispatch(updateProcedureStatus({ id: procedure._id, status: "IN_PROGRESS" }));
-    };
-
-    const handleCompleteProcedure = async (procedure) => {
-        await dispatch(completeProcedure({ id: procedure._id }));
-    };
-
-    const handleCancelProcedure = async (procedure) => {
-        if (window.confirm("Are you sure you want to cancel this procedure?")) {
-            await dispatch(updateProcedureStatus({ id: procedure._id, status: "CANCELLED" }));
+    const handleAction = async (id, action, status = null) => {
+        if (action === "START") await dispatch(updateProcedureStatus({ id, status: "IN_PROGRESS" }));
+        if (action === "COMPLETE") await dispatch(completeProcedure({ id }));
+        if (action === "CANCEL") {
+            if (window.confirm("Are you sure you want to cancel this procedure?")) {
+                await dispatch(updateProcedureStatus({ id, status: "CANCELLED" }));
+            }
         }
     };
 
@@ -151,332 +137,228 @@ const ProcedureSection = ({ caseSheetId, patientId }) => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+            <div className="flex items-center justify-center h-48">
+                <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-4">
-            {/* Messages */}
-            {successMessage && (
-                <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl flex items-center gap-2">
-                    <span>✓</span> {successMessage}
-                </div>
-            )}
-            {error && (
-                <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2">
-                    <span>✗</span> {error}
-                </div>
-            )}
-
-            {/* Header with Add Button */}
+        <div className="space-y-6">
+            {/* Header */}
             <div className="flex justify-between items-center">
                 <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <span>⚕️</span> Procedures
-                    <span className="text-sm font-normal text-gray-500">({procedures.length})</span>
+                    <div className="p-2 bg-teal-50 rounded-lg text-teal-600">
+                        <Stethoscope className="w-5 h-5" />
+                    </div>
+                    Clinical Procedures
+                    <span className="px-2.5 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs font-bold">{procedures.length}</span>
                 </h3>
                 {can("CASE_PROCEDURE", "CREATE") && (
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-medium hover:shadow-lg transition-all text-sm"
+                        className="px-4 py-2 bg-teal-600 text-white rounded-xl shadow-lg shadow-teal-600/20 hover:bg-teal-700 hover:shadow-xl hover:shadow-teal-600/30 transition-all font-medium flex items-center gap-2 active:scale-95"
                     >
-                        + Add Procedure
+                        <Plus className="w-4 h-4" />
+                        Plan Procedure
                     </button>
                 )}
             </div>
 
-            {/* Procedures Table */}
-            {procedures.length > 0 ? (
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-gray-200">
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Procedure</th>
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Tooth</th>
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Performed By</th>
-                                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Date</th>
-                                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {procedures.map((procedure) => {
-                                const statusConfig = STATUS_CONFIG[procedure.status];
-                                const isLocked = procedure.status === "COMPLETED" || procedure.status === "CANCELLED";
+            {/* Notification Area */}
+            {successMessage && (
+                <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-3 rounded-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="font-medium">{successMessage}</span>
+                </div>
+            )}
 
-                                return (
-                                    <tr
-                                        key={procedure._id}
-                                        className={`border-b border-gray-100 hover:bg-gray-50 ${procedure.status === "CANCELLED" ? "opacity-60" : ""}`}
-                                    >
-                                        <td className="py-4 px-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-medium text-gray-800">{procedure.name}</span>
-                                                {procedure.status === "COMPLETED" && procedure.isBillable && (
-                                                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
-                                                        💰 Billable
-                                                    </span>
-                                                )}
+            {/* Procedures List */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                {procedures.length > 0 ? (
+                    <div className="divide-y divide-gray-100">
+                        {procedures.map((procedure) => {
+                            const status = STATUS_CONFIG[procedure.status] || STATUS_CONFIG.PLANNED;
+                            const StatusIcon = status.icon;
+
+                            return (
+                                <div key={procedure._id} className={`p-5 hover:bg-gray-50/80 transition-all group ${procedure.status === "CANCELLED" ? "opacity-60 bg-gray-50/30" : ""}`}>
+                                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+
+                                        {/* Left: Info */}
+                                        <div className="flex items-start gap-3 sm:gap-4 overflow-hidden">
+                                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm border ${procedure.status === 'COMPLETED' ? 'bg-emerald-100 border-emerald-200 text-emerald-600' : 'bg-white border-gray-200 text-gray-500'}`}>
+                                                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                                             </div>
-                                            {procedure.notes && (
-                                                <p className="text-xs text-gray-500 mt-1">{procedure.notes}</p>
-                                            )}
-                                        </td>
-                                        <td className="py-4 px-4 text-gray-600">
-                                            {procedure.toothNumber || "—"}
-                                        </td>
-                                        <td className="py-4 px-4">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}>
-                                                {statusConfig.icon} {statusConfig.label}
-                                            </span>
-                                        </td>
-                                        <td className="py-4 px-4 text-gray-600 text-sm">
-                                            {procedure.performedBy?.fullName || "—"}
-                                        </td>
-                                        <td className="py-4 px-4 text-gray-600 text-sm">
-                                            {procedure.performedAt
-                                                ? new Date(procedure.performedAt).toLocaleDateString()
-                                                : new Date(procedure.createdAt).toLocaleDateString()
-                                            }
-                                        </td>
-                                        <td className="py-4 px-4">
-                                            <div className="flex justify-end gap-2">
-                                                {/* PLANNED actions */}
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                                    <h4 className="font-bold text-gray-800 text-sm sm:text-base truncate">{procedure.name}</h4>
+                                                    {procedure.isBillable && (
+                                                        <span className="px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-100 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 shrink-0">
+                                                            <IndianRupee className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Billable
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[11px] sm:text-sm text-gray-500">
+                                                    {procedure.toothNumber && (
+                                                        <span className="bg-gray-100 px-1.5 rounded text-gray-700 font-mono font-bold">Tooth: {procedure.toothNumber}</span>
+                                                    )}
+                                                    {procedure.notes && (
+                                                        <span className="truncate max-w-[150px] sm:max-w-xs italic">— {procedure.notes}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Right: Status & Actions */}
+                                        <div className="flex items-center gap-4 self-end sm:self-center">
+                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${status.color}`}>
+                                                <StatusIcon className={`w-3.5 h-3.5 ${procedure.status === 'IN_PROGRESS' ? 'animate-spin' : ''}`} />
+                                                {status.label}
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {procedure.status === "PLANNED" && (
                                                     <>
                                                         {can("CASE_PROCEDURE", "EDIT") && (
                                                             <button
                                                                 onClick={() => openEditModal(procedure)}
-                                                                disabled={actionLoading}
-                                                                className="px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+                                                                className="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                                                                title="Edit"
                                                             >
-                                                                Edit
+                                                                <Edit2 className="w-4 h-4" />
                                                             </button>
                                                         )}
                                                         {can("CASE_PROCEDURE", "EDIT") && (
                                                             <button
-                                                                onClick={() => handleStartProcedure(procedure)}
-                                                                disabled={actionLoading}
-                                                                className="px-3 py-1.5 text-xs bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 disabled:opacity-50"
+                                                                onClick={() => handleAction(procedure._id, "START")}
+                                                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                title="Start Procedure"
                                                             >
-                                                                ▶ Start
+                                                                <Play className="w-4 h-4" />
                                                             </button>
                                                         )}
                                                         {can("CASE_PROCEDURE", "EDIT") && (
                                                             <button
-                                                                onClick={() => handleCancelProcedure(procedure)}
-                                                                disabled={actionLoading}
-                                                                className="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100 disabled:opacity-50"
+                                                                onClick={() => handleAction(procedure._id, "CANCEL")}
+                                                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                title="Cancel"
                                                             >
-                                                                Cancel
+                                                                <XCircle className="w-4 h-4" />
                                                             </button>
                                                         )}
                                                     </>
                                                 )}
 
-                                                {/* IN_PROGRESS actions */}
                                                 {procedure.status === "IN_PROGRESS" && can("CASE_PROCEDURE", "COMPLETE") && (
                                                     <button
-                                                        onClick={() => handleCompleteProcedure(procedure)}
-                                                        disabled={actionLoading}
-                                                        className="px-3 py-1.5 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 disabled:opacity-50"
+                                                        onClick={() => handleAction(procedure._id, "COMPLETE")}
+                                                        className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 shadow-sm flex items-center gap-1.5"
                                                     >
-                                                        ✓ Complete
+                                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                                        Complete
                                                     </button>
                                                 )}
-
-                                                {/* COMPLETED - read only */}
-                                                {procedure.status === "COMPLETED" && (
-                                                    <span className="text-xs text-gray-400 italic">Read-only</span>
-                                                )}
-
-                                                {/* CANCELLED - greyed out */}
-                                                {procedure.status === "CANCELLED" && (
-                                                    <span className="text-xs text-gray-400 italic">Cancelled</span>
-                                                )}
                                             </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            ) : (
-                <div className="text-center py-12 text-gray-500">
-                    <div className="text-4xl mb-3">⚕️</div>
-                    <p>No procedures planned yet.</p>
-                    {can("CASE_PROCEDURE", "CREATE") && (
-                        <button
-                            onClick={() => setShowAddModal(true)}
-                            className="mt-4 text-teal-600 hover:text-teal-700 font-medium"
-                        >
-                            + Add first procedure
-                        </button>
-                    )}
-                </div>
-            )}
-
-            {/* Add Procedure Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">Plan New Procedure</h3>
-                        <form onSubmit={handleAddProcedure} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Procedure Name *
-                                </label>
-                                <input
-                                    list="procedures-list"
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="Select or type procedure..."
-                                    required
-                                />
-                                <datalist id="procedures-list">
-                                    {COMMON_PROCEDURES.map(proc => (
-                                        <option key={proc} value={proc} />
-                                    ))}
-                                </datalist>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Tooth Number (FDI/Universal)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.toothNumber}
-                                    onChange={(e) => setFormData({ ...formData, toothNumber: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="e.g., 36, 21"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Notes
-                                </label>
-                                <textarea
-                                    value={formData.notes}
-                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                    rows={2}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="Additional notes..."
-                                />
-                            </div>
-
-                            <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.isBillable}
-                                    onChange={(e) => setFormData({ ...formData, isBillable: e.target.checked })}
-                                    className="w-5 h-5 text-teal-500 rounded"
-                                />
-                                <span className="text-gray-700">Billable procedure</span>
-                            </label>
-
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => { setShowAddModal(false); resetForm(); }}
-                                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={actionLoading}
-                                    className="flex-1 px-4 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-medium hover:shadow-lg disabled:opacity-50"
-                                >
-                                    {actionLoading ? "Saving..." : "Plan Procedure"}
-                                </button>
-                            </div>
-                        </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                </div>
-            )}
+                ) : (
+                    <div className="p-12 text-center flex flex-col items-center">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                            <Stethoscope className="w-8 h-8 text-gray-300" />
+                        </div>
+                        <h4 className="text-lg font-bold text-gray-800">No procedures recorded</h4>
+                        <p className="text-gray-500 max-w-sm mt-1">
+                            Add procedures to track clinical treatments, progress, and billing status.
+                        </p>
+                    </div>
+                )}
+            </div>
 
-            {/* Edit Procedure Modal */}
-            {showEditModal && selectedProcedure && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">Edit Procedure</h3>
-                        <form onSubmit={handleEditProcedure} className="space-y-4">
+            {/* Modal - Reused for Add & Edit */}
+            {(showAddModal || showEditModal) && (
+                <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-800">
+                                {showEditModal ? "Edit Procedure" : "Plan New Procedure"}
+                            </h3>
+                            <button
+                                onClick={() => { setShowAddModal(false); setShowEditModal(false); resetForm(); }}
+                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={showEditModal ? handleEditProcedure : handleAddProcedure} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Procedure Name *
-                                </label>
-                                <input
-                                    list="procedures-list-edit"
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    required
-                                />
-                                <datalist id="procedures-list-edit">
-                                    {COMMON_PROCEDURES.map(proc => (
-                                        <option key={proc} value={proc} />
-                                    ))}
-                                </datalist>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Procedure Name</label>
+                                <div className="relative">
+                                    <input
+                                        list="procedures-list"
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all font-medium text-gray-800"
+                                        placeholder="Select or type..."
+                                        required
+                                        autoFocus
+                                    />
+                                    <datalist id="procedures-list">
+                                        {COMMON_PROCEDURES.map(proc => <option key={proc} value={proc} />)}
+                                    </datalist>
+                                </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Tooth Number
-                                </label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Tooth Number</label>
                                 <input
                                     type="text"
                                     value={formData.toothNumber}
                                     onChange={(e) => setFormData({ ...formData, toothNumber: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all font-medium"
+                                    placeholder="e.g. 18, 24"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Notes
-                                </label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Clinical Notes</label>
                                 <textarea
                                     value={formData.notes}
                                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                     rows={2}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all resize-none"
+                                    placeholder="Any specific observations..."
                                 />
                             </div>
 
-                            <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
+                            <label className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.isBillable ? 'bg-teal-500 border-teal-500' : 'bg-white border-gray-300'}`}>
+                                    {formData.isBillable && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                                </div>
                                 <input
                                     type="checkbox"
                                     checked={formData.isBillable}
                                     onChange={(e) => setFormData({ ...formData, isBillable: e.target.checked })}
-                                    className="w-5 h-5 text-teal-500 rounded"
+                                    className="hidden"
                                 />
-                                <span className="text-gray-700">Billable procedure</span>
+                                <span className="text-sm font-semibold text-gray-700 select-none">Mark as Billable</span>
                             </label>
 
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => { setShowEditModal(false); setSelectedProcedure(null); resetForm(); }}
-                                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={actionLoading}
-                                    className="flex-1 px-4 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-medium hover:shadow-lg disabled:opacity-50"
-                                >
-                                    {actionLoading ? "Saving..." : "Update Procedure"}
-                                </button>
-                            </div>
+                            <button
+                                type="submit"
+                                disabled={actionLoading}
+                                className="w-full py-3.5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-xl font-bold shadow-lg shadow-teal-500/20 hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center justify-center gap-2"
+                            >
+                                {actionLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                                {actionLoading ? "Saving..." : (showEditModal ? "Update Procedure" : "Save Procedure")}
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -484,5 +366,12 @@ const ProcedureSection = ({ caseSheetId, patientId }) => {
         </div>
     );
 };
+
+// Helper icon component for use in parent
+export const Stethoscope = ({ className }) => (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+);
 
 export default ProcedureSection;

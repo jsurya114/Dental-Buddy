@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { uploadMedia, addEmbed } from '../../redux/illustrationSlice';
-import { X, Upload, Video, Camera, Link, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { X, Upload, Video, Camera, Link, Image as ImageIcon, Loader2, Check } from 'lucide-react';
 
 const IllustrationUploadModal = ({ isOpen, onClose }) => {
     const dispatch = useDispatch();
@@ -106,82 +106,99 @@ const IllustrationUploadModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden scale-100 animate-in zoom-in-95 duration-200">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                    <h2 className="text-lg font-semibold text-gray-800">Add New Illustration</h2>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-gray-500" />
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-800">Add Illustration</h2>
+                        <p className="text-sm text-gray-500">Upload media or embed a video</p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-all"
+                    >
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-gray-100">
+                <div className="flex p-2 gap-2 bg-white">
                     <button
                         onClick={() => setActiveTab('UPLOAD')}
-                        className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === 'UPLOAD' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`flex-1 py-2.5 text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all ${activeTab === 'UPLOAD'
+                                ? 'bg-teal-50 text-teal-700 shadow-sm ring-1 ring-teal-100'
+                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                            }`}
                     >
                         <Upload className="w-4 h-4" /> Upload
                     </button>
                     <button
                         onClick={() => setActiveTab('CAMERA')}
-                        className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === 'CAMERA' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`flex-1 py-2.5 text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all ${activeTab === 'CAMERA'
+                                ? 'bg-teal-50 text-teal-700 shadow-sm ring-1 ring-teal-100'
+                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                            }`}
                     >
                         <Camera className="w-4 h-4" /> Camera
                     </button>
                     <button
                         onClick={() => setActiveTab('EMBED')}
-                        className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === 'EMBED' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`flex-1 py-2.5 text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all ${activeTab === 'EMBED'
+                                ? 'bg-teal-50 text-teal-700 shadow-sm ring-1 ring-teal-100'
+                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                            }`}
                     >
-                        <Link className="w-4 h-4" /> Embed URL
+                        <Link className="w-4 h-4" /> Embed
                     </button>
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 pt-2">
                     {/* Common Title Input */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Title (Optional)</label>
+                    <div className="mb-5">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Title (Optional)</label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="e.g., Root Canal Diagram"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all placeholder:text-gray-400"
                         />
                     </div>
 
                     {/* UPLOAD TAB */}
                     {activeTab === 'UPLOAD' && (
-                        <div className="space-y-4">
+                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                             {!preview ? (
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-500 transition-colors cursor-pointer relative">
+                                <div className="border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center hover:border-teal-500 hover:bg-teal-50/30 transition-all cursor-pointer relative group">
                                     <input
                                         type="file"
                                         accept="image/*,video/*"
                                         onChange={handleFileChange}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     />
-                                    <div className="mx-auto w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-3">
-                                        <ImageIcon className="w-6 h-6" />
+                                    <div className="mx-auto w-14 h-14 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                                        <ImageIcon className="w-7 h-7" />
                                     </div>
-                                    <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
-                                    <p className="text-xs text-gray-500 mt-1">SVG, PNG, JPG, or MP4</p>
+                                    <p className="font-semibold text-gray-700 group-hover:text-teal-700">Click to upload or drag and drop</p>
+                                    <p className="text-xs text-gray-400 mt-1">SVG, PNG, JPG, or MP4</p>
                                 </div>
                             ) : (
-                                <div className="relative rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                                <div className="relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-200 group">
                                     {file?.type?.startsWith('video/') ? (
-                                        <video src={preview} controls className="w-full h-48 object-contain" />
+                                        <video src={preview} controls className="w-full h-56 object-contain" />
                                     ) : (
-                                        <img src={preview} alt="Preview" className="w-full h-48 object-contain" />
+                                        <img src={preview} alt="Preview" className="w-full h-56 object-contain" />
                                     )}
-                                    <button
-                                        onClick={() => { setFile(null); setPreview(null); }}
-                                        className="absolute top-2 right-2 p-1 bg-white/80 hover:bg-white rounded-full shadow-sm text-gray-600 transition-all"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2 pointer-events-none">
+                                        <button
+                                            onClick={() => { setFile(null); setPreview(null); }}
+                                            className="p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white transition-all pointer-events-auto"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -189,34 +206,38 @@ const IllustrationUploadModal = ({ isOpen, onClose }) => {
 
                     {/* CAMERA TAB */}
                     {activeTab === 'CAMERA' && (
-                        <div className="space-y-4">
-                            <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
+                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="relative bg-black rounded-2xl overflow-hidden aspect-video shadow-inner">
                                 <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover"></video>
                                 <canvas ref={canvasRef} width="640" height="480" className="hidden"></canvas>
+                                <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={capturePhoto}
+                                        className="w-14 h-14 bg-white rounded-full border-4 border-gray-300 shadow-lg hover:border-teal-500 hover:scale-105 transition-all flex items-center justify-center"
+                                    >
+                                        <div className="w-10 h-10 bg-teal-600 rounded-full"></div>
+                                    </button>
+                                </div>
                             </div>
-                            <button
-                                type="button"
-                                onClick={capturePhoto}
-                                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors"
-                            >
-                                <Camera className="w-4 h-4" /> Capture Photo
-                            </button>
                         </div>
                     )}
 
                     {/* EMBED TAB */}
                     {activeTab === 'EMBED' && (
-                        <div className="space-y-4">
+                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Video URL</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Video URL</label>
                                 <input
                                     type="url"
                                     value={embedUrl}
                                     onChange={(e) => setEmbedUrl(e.target.value)}
                                     placeholder="https://www.youtube.com/watch?v=..."
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-mono text-sm"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Supports YouTube, Facebook, Instagram</p>
+                                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                                    <Video className="w-3 h-3" /> Supports YouTube, Vimeo, etc.
+                                </p>
                             </div>
                         </div>
                     )}
@@ -224,10 +245,10 @@ const IllustrationUploadModal = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                <div className="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                        className="px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-200/80 rounded-xl transition-colors"
                         disabled={loading}
                     >
                         Cancel
@@ -236,7 +257,7 @@ const IllustrationUploadModal = ({ isOpen, onClose }) => {
                         <button
                             onClick={handleSubmit}
                             disabled={loading || (activeTab === 'UPLOAD' && !file) || (activeTab === 'EMBED' && !embedUrl)}
-                            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 rounded-xl shadow-lg shadow-teal-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                             {activeTab === 'EMBED' ? 'Embed Video' : 'Upload Media'}

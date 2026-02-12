@@ -114,26 +114,26 @@ const ImagingDetail = () => {
     return (
         <div className="space-y-6 animate-fade-in h-full flex flex-col">
             {/* Header */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex justify-between items-center">
+            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex items-center gap-4">
-                    <Link to="/app/imaging" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                    <Link to="/app/imaging" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors shrink-0">
                         ←
                     </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                            {currentPatient.fullName}
-                            <span className="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg">
+                    <div className="min-w-0">
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex flex-wrap items-center gap-2">
+                            <span className="truncate">{currentPatient.fullName}</span>
+                            <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg shrink-0">
                                 {currentPatient.patientId}
                             </span>
                         </h1>
-                        <p className="text-gray-500 text-sm">Imaging & Documents Gallery</p>
+                        <p className="text-gray-500 text-xs sm:text-sm">Imaging & Gallery</p>
                     </div>
                 </div>
 
                 {can("IMAGING", "CREATE") && (
                     <button
                         onClick={() => setShowUploadModal(true)}
-                        className="px-6 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-medium hover:shadow-lg transition-all flex items-center gap-2"
+                        className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
                         <span>📤</span> Upload File
                     </button>

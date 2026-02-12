@@ -35,7 +35,8 @@ export const createUser = async (req, res) => {
 export const getUsers = async (req, res) => {
     try {
         const filters = {
-            isProfessional: req.query.isProfessional === "true"
+            isProfessional: req.query.isProfessional === "true",
+            status: req.query.status // 'active', 'inactive', 'all'
         };
         const users = await userService.getAllUsers(filters);
         users.sort((a, b) => a.fullName.localeCompare(b.fullName));

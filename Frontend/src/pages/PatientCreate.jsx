@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createPatient } from "../redux/patientSlice";
+import { User, Phone, MapPin, Briefcase, HeartPulse, Save, X } from "lucide-react";
 
 const PatientCreate = () => {
     const dispatch = useDispatch();
@@ -43,160 +44,202 @@ const PatientCreate = () => {
         }
     };
 
+    const InputGroup = ({ label, icon: Icon, required, ...props }) => (
+        <div>
+            <label className="block text-sm font-bold text-sky-900 mb-1.5 flex items-center gap-1.5">
+                {Icon && <Icon className="w-3.5 h-3.5 text-sky-400" />}
+                {label} {required && <span className="text-red-500">*</span>}
+            </label>
+            <input
+                {...props}
+                className="w-full px-4 py-2.5 bg-sky-50/50 border-sky-100 border rounded-xl focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm font-medium text-sky-900 placeholder-sky-300"
+            />
+        </div>
+    );
+
+    const SelectGroup = ({ label, icon: Icon, options, ...props }) => (
+        <div>
+            <label className="block text-sm font-bold text-sky-900 mb-1.5 flex items-center gap-1.5">
+                {Icon && <Icon className="w-3.5 h-3.5 text-sky-400" />}
+                {label}
+            </label>
+            <div className="relative">
+                <select
+                    {...props}
+                    className="w-full px-4 py-2.5 bg-sky-50/50 border-sky-100 border rounded-xl focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm appearance-none font-medium text-sky-900"
+                >
+                    {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </div>
+            </div>
+        </div>
+    );
+
     return (
-        <div className="max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Register New Patient</h1>
+        <div className="max-w-4xl mx-auto py-4 animate-in fade-in duration-500">
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-2xl font-bold text-sky-950 tracking-tight">Register New Patient</h1>
+                    <p className="text-sky-700/80 text-sm mt-1">Create a new patient record in the system</p>
+                </div>
+                <button
+                    onClick={() => navigate("/app/patients")}
+                    className="p-2 text-sky-400 hover:text-sky-700 hover:bg-sky-50 rounded-lg transition-colors"
+                >
+                    <X className="w-6 h-6" />
+                </button>
+            </div>
 
             {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6">
-                    {error}
+                <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl mb-6 flex items-start gap-3">
+                    <span className="text-lg">⚠️</span>
+                    <span className="text-sm font-medium">{error}</span>
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
-                {/* Personal Info */}
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
+            <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Personal Info Card */}
+                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-sky-900/5 border border-sky-100">
+                    <h2 className="text-lg font-bold text-sky-950 mb-6 flex items-center gap-2">
+                        <span className="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center shadow-sm">
+                            <User className="w-5 h-5" />
+                        </span>
                         Personal Information
-                    </h3>
+                    </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                            <input
-                                required
-                                name="fullName"
-                                value={formData.fullName}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                            <select
-                                name="gender"
-                                value={formData.gender}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            >
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
-                            <input
-                                type="number"
-                                name="age"
-                                value={formData.age}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                            <input
-                                type="date"
-                                name="dob"
-                                value={formData.dob}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            />
-                        </div>
+                        <InputGroup
+                            label="Full Name"
+                            name="fullName"
+                            value={formData.fullName}
+                            onChange={handleChange}
+                            required
+                            placeholder="ex. John Doe"
+                        />
+                        <SelectGroup
+                            label="Gender"
+                            name="gender"
+                            value={formData.gender}
+                            onChange={handleChange}
+                            options={["Male", "Female", "Other"]}
+                        />
+                        <InputGroup
+                            label="Age"
+                            type="number"
+                            name="age"
+                            value={formData.age}
+                            onChange={handleChange}
+                            placeholder="ex. 32"
+                        />
+                        <InputGroup
+                            label="Date of Birth"
+                            type="date"
+                            name="dob"
+                            value={formData.dob}
+                            onChange={handleChange}
+                        />
                     </div>
                 </div>
 
-                {/* Contact Info */}
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
-                        Contact Information
-                    </h3>
+                {/* Contact Info Card */}
+                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-sky-900/5 border border-sky-100">
+                    <h2 className="text-lg font-bold text-sky-950 mb-6 flex items-center gap-2">
+                        <span className="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center shadow-sm">
+                            <Phone className="w-5 h-5" />
+                        </span>
+                        Contact Details
+                    </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                            <input
-                                required
-                                type="tel"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            />
-                        </div>
+                        <InputGroup
+                            label="Phone Number"
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            required
+                            placeholder="+1 (555) 000-0000"
+                            icon={Phone}
+                        />
+                        <InputGroup
+                            label="Email Address"
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="john@example.com"
+                        />
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                            <label className="block text-sm font-bold text-sky-900 mb-1.5 flex items-center gap-1.5">
+                                <MapPin className="w-3.5 h-3.5 text-sky-400" />
+                                Residential Address
+                            </label>
                             <textarea
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
-                                rows="2"
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                rows="3"
+                                className="w-full px-4 py-2.5 bg-sky-50/50 border-sky-100 border rounded-xl focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm font-medium text-sky-900 placeholder-sky-300 resize-none"
+                                placeholder="Enter full address..."
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Occupation</label>
-                            <input
-                                name="occupation"
-                                value={formData.occupation}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            />
-                        </div>
+                        <InputGroup
+                            label="Occupation"
+                            name="occupation"
+                            value={formData.occupation}
+                            onChange={handleChange}
+                            placeholder="ex. Software Engineer"
+                            icon={Briefcase}
+                        />
                     </div>
                 </div>
 
-                {/* Emergency Contact */}
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
+                {/* Emergency Contact Card */}
+                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-sky-900/5 border border-sky-100">
+                    <h2 className="text-lg font-bold text-sky-950 mb-6 flex items-center gap-2">
+                        <span className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shadow-sm border border-rose-100">
+                            <HeartPulse className="w-5 h-5" />
+                        </span>
                         Emergency Contact
-                    </h3>
+                    </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Name</label>
-                            <input
-                                name="emergencyContactName"
-                                value={formData.emergencyContactName}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
-                            <input
-                                type="tel"
-                                name="emergencyContactPhone"
-                                value={formData.emergencyContactPhone}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            />
-                        </div>
+                        <InputGroup
+                            label="Contact Name"
+                            name="emergencyContactName"
+                            value={formData.emergencyContactName}
+                            onChange={handleChange}
+                            placeholder="Relative or friend's name"
+                        />
+                        <InputGroup
+                            label="Contact Phone"
+                            type="tel"
+                            name="emergencyContactPhone"
+                            value={formData.emergencyContactPhone}
+                            onChange={handleChange}
+                            placeholder="Emergency phone number"
+                        />
                     </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                {/* Form Actions */}
+                <div className="flex justify-end gap-3 pt-4">
                     <button
                         type="button"
                         onClick={() => navigate("/app/patients")}
-                        className="px-6 py-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                        className="px-6 py-3 text-sky-700 font-bold hover:bg-sky-50 rounded-xl transition-colors"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="px-6 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+                        className="px-8 py-3 bg-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-600/20 hover:bg-sky-700 hover:shadow-xl hover:shadow-sky-600/30 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                     >
+                        {loading ? (
+                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                            <Save className="w-5 h-5" />
+                        )}
                         {loading ? "Registering..." : "Register Patient"}
                     </button>
                 </div>

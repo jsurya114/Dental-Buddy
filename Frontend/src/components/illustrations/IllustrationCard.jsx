@@ -1,4 +1,4 @@
-import { Trash2, Play, ExternalLink } from 'lucide-react';
+import { Trash2, Play, ExternalLink, Image as ImageIcon, Video, MonitorPlay } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { deleteIllustration } from '../../redux/illustrationSlice';
 import { useState } from 'react';
@@ -28,8 +28,14 @@ const IllustrationCard = ({ item, canDelete }) => {
         return `/${src}`;
     };
 
+    const TypeIcon = {
+        IMAGE: ImageIcon,
+        VIDEO: Video,
+        EMBED: MonitorPlay
+    }[item.type] || ImageIcon;
+
     return (
-        <div className="group relative bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col h-full">
+        <div className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full">
 
             {/* Media Display */}
             <div className="aspect-video bg-gray-100 relative overflow-hidden">
@@ -37,7 +43,7 @@ const IllustrationCard = ({ item, canDelete }) => {
                     <img
                         src={getSourceUrl(item.source)}
                         alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                     />
                 )}
 
@@ -50,7 +56,7 @@ const IllustrationCard = ({ item, canDelete }) => {
                 )}
 
                 {item.type === 'EMBED' && (
-                    <div className="w-full h-full">
+                    <div className="w-full h-full bg-black">
                         <iframe
                             src={item.source}
                             title={item.title}
@@ -58,23 +64,27 @@ const IllustrationCard = ({ item, canDelete }) => {
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                         ></iframe>
-                        {/* Overlay to prevent interaction in list view if needed, but useful to play directly */}
                     </div>
                 )}
 
+                {/* Overlay Gradient on Hover */}
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
                 {/* Type Badge */}
-                <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full uppercase tracking-wide">
+                <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-md text-gray-800 text-xs font-bold rounded-full shadow-sm flex items-center gap-1.5">
+                    <TypeIcon className="w-3 h-3 text-teal-600" />
                     {item.type}
                 </div>
             </div>
 
             {/* Content */}
-            <div className="p-4 flex flex-col flex-1">
-                <h3 className="font-semibold text-gray-800 line-clamp-1 mb-1" title={item.title}>
+            <div className="p-5 flex flex-col flex-1">
+                <h3 className="font-bold text-gray-800 line-clamp-1 mb-1 group-hover:text-teal-600 transition-colors" title={item.title}>
                     {item.title || "Untitled Illustration"}
                 </h3>
-                <div className="flex items-center justify-between mt-auto pt-2">
-                    <span className="text-xs text-gray-500">
+
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
+                    <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
                         {formatDate(item.createdAt)}
                     </span>
 
@@ -82,8 +92,8 @@ const IllustrationCard = ({ item, canDelete }) => {
                         <button
                             onClick={handleDelete}
                             disabled={isDeleting}
-                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                            title="Delete"
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300"
+                            title="Delete Illustration"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>

@@ -1,102 +1,101 @@
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { usePermissions } from "../../../hooks/usePermission";
+import {
+    CreditCard, FileText, BarChart3, Users, Plus
+} from "lucide-react";
 
 /**
- * BillingDashboard - Dashboard content for billing/finance roles
- * 
- * Header and logout are handled by AppShell.
- * This component only renders the dashboard content.
+ * BillingDashboard - Reskinned (Lighter Theme)
  */
 const BillingDashboard = () => {
     const user = useSelector((state) => state.auth.user || state.clinicAdmin?.admin);
     const { can } = usePermissions();
+    const [greeting, setGreeting] = useState("Good morning");
+
+    useEffect(() => {
+        const hour = new Date().getHours();
+        if (hour < 12) setGreeting("Good morning");
+        else if (hour < 18) setGreeting("Good afternoon");
+        else setGreeting("Good evening");
+    }, []);
 
     const menuItems = [
         {
-            title: "Invoices",
-            description: "Create and manage invoices",
-            icon: "🧾",
+            title: "Invoice Management",
+            icon: FileText,
             path: "/app/billing",
             resource: "BILLING",
             action: "VIEW",
-            color: "from-emerald-500 to-teal-600"
         },
         {
-            title: "Payments",
-            description: "Process and track payments",
-            icon: "💳",
-            path: "/app/billing",
-            resource: "BILLING",
-            action: "VIEW",
-            color: "from-blue-500 to-cyan-600"
-        },
-        {
-            title: "Reports",
-            description: "Financial reports and analytics",
-            icon: "📊",
+            title: "Financial Reports",
+            icon: BarChart3,
             path: "/app/reports",
             resource: "REPORTS",
             action: "VIEW",
-            color: "from-violet-500 to-purple-600"
         },
         {
-            title: "Patients",
-            description: "View patient billing history",
-            icon: "🏥",
+            title: "Patient Accounts",
+            icon: Users,
             path: "/app/patients",
             resource: "PATIENT",
             action: "VIEW",
-            color: "from-orange-500 to-amber-600"
         }
     ];
 
-    // Filter menu items based on permissions
-    const visibleMenuItems = menuItems.filter(item => can(item.resource, item.action));
+    const visibleMenuItems = menuItems.filter(item => {
+        if (!item.resource) return true;
+        return can(item.resource, item.action);
+    });
 
     return (
-        <div>
-            {/* Welcome Section */}
-            <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-800">
-                    Billing & Finance
-                </h2>
-                <p className="text-gray-500 mt-1">Financial operations portal</p>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white rounded-xl p-4 border border-gray-100">
-                    <p className="text-2xl font-bold text-emerald-600">₹ --</p>
-                    <p className="text-sm text-gray-500">Today's Collection</p>
-                </div>
-                <div className="bg-white rounded-xl p-4 border border-gray-100">
-                    <p className="text-2xl font-bold text-blue-600">--</p>
-                    <p className="text-sm text-gray-500">Pending Invoices</p>
-                </div>
-                <div className="bg-white rounded-xl p-4 border border-gray-100">
-                    <p className="text-2xl font-bold text-violet-600">₹ --</p>
-                    <p className="text-sm text-gray-500">Outstanding</p>
-                </div>
-                <div className="bg-white rounded-xl p-4 border border-gray-100">
-                    <p className="text-2xl font-bold text-amber-600">--</p>
-                    <p className="text-sm text-gray-500">Transactions</p>
+        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+            {/* Header Section */}
+            <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-sky-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-50"></div>
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="text-center md:text-left">
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
+                            {greeting}, <span className="text-sky-600">{user?.fullName?.split(" ")[0] || "Finance"}</span>
+                        </h1>
+                        <p className="text-gray-500 text-lg">
+                            Financial operations portal.
+                        </p>
+                    </div>
+                    {/* Quick Action */}
+                    {can("BILLING", "CREATE") && (
+                        <Link to="/app/billing" className="flex items-center gap-2 px-6 py-3 bg-sky-500 text-white rounded-xl shadow-md hover:bg-sky-600 transition-all font-bold">
+                            <Plus className="w-5 h-5" /> Create Invoice
+                        </Link>
+                    )}
                 </div>
             </div>
 
-            {/* Menu Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Main Navigation Grid - Responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {visibleMenuItems.map((item) => (
                     <Link
-                        key={item.path + item.title}
+                        key={item.path}
                         to={item.path}
-                        className="group bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-all duration-300"
+                        className="group bg-sky-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center text-center h-48 relative overflow-hidden"
                     >
-                        <div className={`w-14 h-14 bg-gradient-to-r ${item.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                            <span className="text-2xl">{item.icon}</span>
+                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 to-transparent opacity-50"></div>
+
+                        <div className="relative z-10 flex flex-col items-center w-full">
+                            <div className="mb-3 text-sky-800 opacity-90 group-hover:scale-110 transition-transform duration-300">
+                                <item.icon className="w-9 h-9" />
+                            </div>
+
+                            <h3 className="text-xl font-bold text-sky-950 mb-6">
+                                {item.title}
+                            </h3>
+
+                            <div className="px-8 py-2 bg-sky-600 text-white text-sm font-bold rounded-full shadow-sm group-hover:bg-sky-700 transition-colors">
+                                Go
+                            </div>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-1">{item.title}</h3>
-                        <p className="text-sm text-gray-500">{item.description}</p>
                     </Link>
                 ))}
             </div>

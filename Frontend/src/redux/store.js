@@ -11,6 +11,7 @@ import reportReducer from "./reportSlice";
 import appointmentReducer from "./appointmentSlice";
 import prescriptionReducer from "./prescriptionSlice";
 import illustrationReducer from "./illustrationSlice";
+import roleReducer from "./roleSlice";
 
 
 export const store = configureStore({
@@ -26,7 +27,8 @@ export const store = configureStore({
         imaging: imagingReducer,
         reports: reportReducer,
         appointments: appointmentReducer,
-        illustrations: illustrationReducer
+        illustrations: illustrationReducer,
+        roles: roleReducer
 
     }
 });

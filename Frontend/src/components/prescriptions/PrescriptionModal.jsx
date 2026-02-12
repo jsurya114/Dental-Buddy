@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { createPrescription } from "../../redux/prescriptionSlice.js";
+import { X, Plus, Trash2, Pill, Save, Loader2, AlertCircle } from "lucide-react";
 
 const PrescriptionModal = ({ isOpen, onClose, patientId, caseSheetId, initialData = null }) => {
     const dispatch = useDispatch();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [medicines, setMedicines] = useState([
         { name: "", dosage: "", frequency: "", duration: "", instruction: "" }
@@ -46,6 +48,7 @@ const PrescriptionModal = ({ isOpen, onClose, patientId, caseSheetId, initialDat
             return;
         }
 
+        setIsSubmitting(true);
         const payload = {
             patientId,
             caseSheetId,
@@ -54,6 +57,8 @@ const PrescriptionModal = ({ isOpen, onClose, patientId, caseSheetId, initialDat
         };
 
         const result = await dispatch(createPrescription(payload));
+        setIsSubmitting(false);
+
         if (createPrescription.fulfilled.match(result)) {
             onClose();
         }
@@ -62,143 +67,164 @@ const PrescriptionModal = ({ isOpen, onClose, patientId, caseSheetId, initialDat
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto pt-10 pb-10">
-            <div className="bg-white rounded-2xl w-full max-w-4xl p-6 shadow-xl mx-4 my-auto">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-800">
-                        {initialData ? "Edit Prescription" : "New Prescription"}
-                    </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-                        ✕
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto px-4 py-8 animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl w-full max-w-4xl shadow-2xl scale-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+
+                {/* Header */}
+                <div className="flex justify-between items-center p-6 border-b border-gray-100">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <div className="p-2 bg-teal-50 rounded-lg text-teal-600">
+                                <Pill className="w-6 h-6" />
+                            </div>
+                            {initialData ? "Edit Prescription" : "New Prescription"}
+                        </h2>
+                        <p className="text-sm text-gray-500 mt-1 ml-12">Add medications for the patient</p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Medicines Table */}
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-semibold text-gray-700">Medicines</h3>
-                        </div>
+                {/* Form Content - Scrollable */}
+                <div className="p-6 overflow-y-auto custom-scrollbar">
+                    <form onSubmit={handleSubmit} className="space-y-8">
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="text-xs font-semibold text-gray-500 uppercase border-b border-gray-200">
-                                        <th className="px-2 py-2 w-1/4">Name</th>
-                                        <th className="px-2 py-2 w-1/6">Dosage</th>
-                                        <th className="px-2 py-2 w-1/6">Frequency</th>
-                                        <th className="px-2 py-2 w-1/6">Duration</th>
-                                        <th className="px-2 py-2 w-1/4">Instruction</th>
-                                        <th className="px-2 py-2 w-10"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {medicines.map((med, index) => (
-                                        <tr key={index} className="bg-white">
-                                            <td className="p-2">
-                                                <input
-                                                    type="text"
-                                                    value={med.name}
-                                                    onChange={(e) => handleMedicineChange(index, "name", e.target.value)}
-                                                    placeholder="Paracetamol"
-                                                    className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-teal-500 text-sm"
-                                                    required={index === 0}
-                                                />
-                                            </td>
-                                            <td className="p-2">
-                                                <input
-                                                    type="text"
-                                                    value={med.dosage}
-                                                    onChange={(e) => handleMedicineChange(index, "dosage", e.target.value)}
-                                                    placeholder="500mg"
-                                                    className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-teal-500 text-sm"
-                                                    required={index === 0}
-                                                />
-                                            </td>
-                                            <td className="p-2">
-                                                <input
-                                                    type="text"
-                                                    value={med.frequency}
-                                                    onChange={(e) => handleMedicineChange(index, "frequency", e.target.value)}
-                                                    placeholder="1-0-1"
-                                                    className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-teal-500 text-sm"
-                                                    required={index === 0}
-                                                />
-                                            </td>
-                                            <td className="p-2">
-                                                <input
-                                                    type="text"
-                                                    value={med.duration}
-                                                    onChange={(e) => handleMedicineChange(index, "duration", e.target.value)}
-                                                    placeholder="5 days"
-                                                    className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-teal-500 text-sm"
-                                                    required={index === 0}
-                                                />
-                                            </td>
-                                            <td className="p-2">
-                                                <input
-                                                    type="text"
-                                                    value={med.instruction}
-                                                    onChange={(e) => handleMedicineChange(index, "instruction", e.target.value)}
-                                                    placeholder="After food"
-                                                    className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-teal-500 text-sm"
-                                                />
-                                            </td>
-                                            <td className="p-2 text-center">
-                                                {medicines.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeMedicineRow(index)}
-                                                        className="text-red-400 hover:text-red-600"
-                                                        title="Remove"
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                )}
-                                            </td>
+                        {/* Medicines Table */}
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Medications</h3>
+                                <button
+                                    type="button"
+                                    onClick={addMedicineRow}
+                                    className="text-sm font-bold text-teal-600 hover:text-teal-700 hover:bg-teal-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                                >
+                                    <Plus className="w-4 h-4" /> Add Item
+                                </button>
+                            </div>
+
+                            <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-gray-50 text-xs font-bold text-gray-500 uppercase border-b border-gray-200">
+                                            <th className="px-4 py-3 w-[25%]">Medicine Name *</th>
+                                            <th className="px-4 py-3 w-[15%]">Dosage</th>
+                                            <th className="px-4 py-3 w-[15%]">Frequency</th>
+                                            <th className="px-4 py-3 w-[15%]">Duration</th>
+                                            <th className="px-4 py-3 w-[25%]">Instruction</th>
+                                            <th className="px-4 py-3 w-[5%]"></th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {medicines.map((med, index) => (
+                                            <tr key={index} className="group hover:bg-gray-50/50 transition-colors">
+                                                <td className="p-2">
+                                                    <input
+                                                        type="text"
+                                                        value={med.name}
+                                                        onChange={(e) => handleMedicineChange(index, "name", e.target.value)}
+                                                        placeholder="e.g. Paracetamol"
+                                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none text-sm font-medium"
+                                                        required={index === 0}
+                                                        autoFocus={index === medicines.length - 1 && medicines.length > 1}
+                                                    />
+                                                </td>
+                                                <td className="p-2">
+                                                    <input
+                                                        type="text"
+                                                        value={med.dosage}
+                                                        onChange={(e) => handleMedicineChange(index, "dosage", e.target.value)}
+                                                        placeholder="500mg"
+                                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none text-sm"
+                                                        required={index === 0}
+                                                    />
+                                                </td>
+                                                <td className="p-2">
+                                                    <input
+                                                        type="text"
+                                                        value={med.frequency}
+                                                        onChange={(e) => handleMedicineChange(index, "frequency", e.target.value)}
+                                                        placeholder="1-0-1"
+                                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none text-sm"
+                                                        required={index === 0}
+                                                    />
+                                                </td>
+                                                <td className="p-2">
+                                                    <input
+                                                        type="text"
+                                                        value={med.duration}
+                                                        onChange={(e) => handleMedicineChange(index, "duration", e.target.value)}
+                                                        placeholder="5 days"
+                                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none text-sm"
+                                                        required={index === 0}
+                                                    />
+                                                </td>
+                                                <td className="p-2">
+                                                    <input
+                                                        type="text"
+                                                        value={med.instruction}
+                                                        onChange={(e) => handleMedicineChange(index, "instruction", e.target.value)}
+                                                        placeholder="After food"
+                                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none text-sm"
+                                                    />
+                                                </td>
+                                                <td className="p-2 text-center">
+                                                    {medicines.length > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeMedicineRow(index)}
+                                                            className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                            title="Remove Row"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <button
-                            type="button"
-                            onClick={addMedicineRow}
-                            className="mt-3 text-sm text-teal-600 hover:text-teal-800 font-medium flex items-center gap-1"
-                        >
-                            <span>+</span> Add Medicine
-                        </button>
-                    </div>
 
-                    {/* Notes */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
-                        <textarea
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            rows="3"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                            placeholder="General instructions for the patient..."
-                        />
-                    </div>
+                        {/* Notes */}
+                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-100/50">
+                            <label className="flex items-center gap-2 text-sm font-bold text-amber-800 mb-2">
+                                <AlertCircle className="w-4 h-4" /> Additional Notes (Optional)
+                            </label>
+                            <textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                rows="3"
+                                className="w-full px-4 py-3 bg-white border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none text-sm resize-none placeholder-amber-300"
+                                placeholder="Dietary restrictions, refill instructions, etc."
+                            />
+                        </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-3 pt-4 border-t border-gray-100">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-xl font-medium hover:bg-teal-700 shadow-md"
-                        >
-                            Save Prescription
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
+
+                {/* Footer with Actions */}
+                <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-6 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className="px-8 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-xl font-bold hover:shadow-lg hover:scale-[1.02] transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                        {isSubmitting ? "Issuing..." : "Issue Prescription"}
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -7,7 +7,9 @@ import {
     listPatients,
     getPatient,
     updatePatient,
-    deactivatePatient
+    deactivatePatient,
+    getToothChart,
+    updateToothStatus
 } from "../controllers/patientController.js";
 
 const router = express.Router();
@@ -53,6 +55,22 @@ router.patch(
     can("PATIENT", "DELETE"),
     audit("DEACTIVATE_PATIENT", "Patient"),
     deactivatePatient
+);
+
+// Tooth Chart Routes
+router.get(
+    "/:id/tooth-chart",
+    auth,
+    can("CASE_EXAM", "VIEW"), // Reusing existing permissions
+    getToothChart
+);
+
+router.patch(
+    "/:id/tooth/:toothNumber",
+    auth,
+    can("CASE_EXAM", "EDIT"),
+    audit("UPDATE_TOOTH_STATUS", "Patient"),
+    updateToothStatus
 );
 
 export default router;

@@ -93,12 +93,12 @@ function App() {
         {/* Role Management */}
         <Route path="roles" element={<RoleManagement />} />
         <Route path="roles/create" element={<RoleCreate />} />
-        <Route path="roles/edit/:id" element={<RoleEdit />} />
+        <Route path="roles/:id/edit" element={<RoleEdit />} />
 
         {/* User Management */}
         <Route path="users" element={<UserManagement />} />
         <Route path="users/create" element={<UserCreate />} />
-        <Route path="users/edit/:id" element={<UserEdit />} />
+        <Route path="users/:id/edit" element={<UserEdit />} />
 
         {/* Patient Management */}
         <Route path="patients" element={<PatientList />} />
@@ -132,10 +132,10 @@ function App() {
       <Route path="/clinic-admin/dashboard" element={<Navigate to="/app/dashboard" replace />} />
       <Route path="/clinic-admin/roles" element={<Navigate to="/app/roles" replace />} />
       <Route path="/clinic-admin/roles/create" element={<Navigate to="/app/roles/create" replace />} />
-      <Route path="/clinic-admin/roles/edit/:id" element={<RedirectHelper base="/app/roles/edit" />} />
+      <Route path="/clinic-admin/roles/edit/:id" element={<RedirectHelper base="/app/roles" />} />
       <Route path="/clinic-admin/users" element={<Navigate to="/app/users" replace />} />
       <Route path="/clinic-admin/users/create" element={<Navigate to="/app/users/create" replace />} />
-      <Route path="/clinic-admin/users/edit/:id" element={<RedirectHelper base="/app/users/edit" />} />
+      <Route path="/clinic-admin/users/edit/:id" element={<RedirectHelper base="/app/users" />} />
 
       {/* Redirect old dashboard routes */}
       <Route path="/app/admin/dashboard" element={<Navigate to="/app/dashboard" replace />} />
@@ -155,8 +155,8 @@ function App() {
  */
 const RedirectHelper = ({ base }) => {
   const { id } = useParams();
-  if (!id) return <Navigate to={base.replace("/edit", "")} replace />;
-  return <Navigate to={`${base}/${id}`} replace />;
+  if (!id) return <Navigate to={base} replace />;
+  return <Navigate to={`${base}/${id}/edit`} replace />;
 };
 
 export default App;

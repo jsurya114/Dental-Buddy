@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../api/axios";
 import PermissionEditor from "../components/PermissionEditor";
+import { Save, Shield, Code, Check, ChevronLeft, Lock, Loader2, AlertCircle } from "lucide-react";
 
 const RoleEdit = () => {
     const navigate = useNavigate();
@@ -77,7 +78,7 @@ const RoleEdit = () => {
         try {
             setSaving(true);
             await axiosInstance.put(`/admin/roles/${id}`, formData);
-            navigate("/clinic-admin/roles");
+            navigate("/app/roles");
         } catch (err) {
             setError(err.response?.data?.message || "Failed to update role");
         } finally {
@@ -87,198 +88,187 @@ const RoleEdit = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
-                <div className="w-10 h-10 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin"></div>
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center mb-4">
+                    <Loader2 className="w-8 h-8 text-sky-600 animate-spin" />
+                </div>
+                <p className="text-gray-500 font-medium animate-pulse">Loading Role Details...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
+        <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
             {/* Header */}
-            <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center gap-3">
-                            <Link to="/clinic-admin/dashboard" className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
-                                    <span className="text-xl">🦷</span>
-                                </div>
-                                <div>
-                                    <h1 className="text-lg font-bold text-gray-800">Dental Buddy</h1>
-                                    <p className="text-xs text-gray-500">Edit Role</p>
-                                </div>
-                            </Link>
-                        </div>
-                        <Link
-                            to="/clinic-admin/roles"
-                            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium text-sm"
-                        >
-                            ← Back to Roles
-                        </Link>
-                    </div>
+            <div className="flex items-center justify-between">
+                <div>
+                    <button
+                        onClick={() => navigate("/app/roles")}
+                        className="text-sky-500 hover:text-sky-700 flex items-center gap-1 text-sm font-bold mb-2 transition-colors"
+                    >
+                        <ChevronLeft className="w-4 h-4" /> Back to Roles
+                    </button>
+                    <h1 className="text-3xl font-bold text-sky-950 tracking-tight flex items-center gap-3">
+                        Edit Role: <span className="text-sky-600">{formData.displayName}</span>
+                    </h1>
                 </div>
-            </header>
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={() => navigate("/app/roles")}
+                        className="px-5 py-2.5 text-sky-700 bg-white border border-sky-200 hover:bg-sky-50 rounded-xl font-bold transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={saving}
+                        className="px-6 py-2.5 bg-sky-600 text-white rounded-xl shadow-lg shadow-sky-600/20 hover:bg-sky-700 hover:shadow-xl hover:shadow-sky-600/30 transition-all font-bold flex items-center gap-2 disabled:opacity-50 active:scale-95"
+                    >
+                        {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                        Save Changes
+                    </button>
+                </div>
+            </div>
 
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit Role</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                    {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-                            {error}
-                        </div>
-                    )}
-
-                    {isSystemRole && (
-                        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700">
-                            This is a system role. Some properties cannot be modified.
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Role Display Name */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Role Display Name <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="displayName"
-                                value={formData.displayName}
-                                onChange={handleChange}
-                                disabled={isSystemRole}
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:opacity-50"
-                            />
-                            <p className="mt-1 text-sm text-gray-500">This is what users will see in the UI</p>
-                        </div>
-
-                        {/* Role Code */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Role Code <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="code"
-                                value={formData.code}
-                                onChange={handleChange}
-                                disabled={isSystemRole}
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:opacity-50"
-                            />
-                            <p className="mt-1 text-sm text-gray-500">Unique code for the role (used in login URL)</p>
-                        </div>
-
-                        {/* Description */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Description
-                            </label>
-                            <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                rows={3}
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
-                            />
-                        </div>
-
-                        {/* Is Doctor/Professional Checkbox */}
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="checkbox"
-                                name="isProfessional"
-                                id="isProfessional"
-                                checked={formData.isProfessional}
-                                onChange={handleChange}
-                                disabled={isSystemRole}
-                                className="w-5 h-5 text-teal-500 border-gray-300 rounded focus:ring-teal-500 disabled:opacity-50"
-                            />
-                            <div>
-                                <label htmlFor="isProfessional" className="text-sm font-semibold text-gray-700 block">
-                                    Is Doctor?
-                                </label>
-                                <p className="text-xs text-gray-500">Check this if users with this role can treat patients.</p>
-                            </div>
-                        </div>
-
-                        {/* Icon Selection */}
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Icon
-                            </label>
-                            <div className="flex flex-wrap gap-2">
-                                {iconOptions.map((icon) => (
-                                    <button
-                                        key={icon}
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, icon })}
-                                        className={`w-12 h-12 text-2xl rounded-xl border-2 transition-all ${formData.icon === icon
-                                            ? "border-teal-500 bg-teal-50"
-                                            : "border-gray-200 hover:border-gray-300"
-                                            }`}
-                                    >
-                                        {icon}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Active Status */}
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="checkbox"
-                                name="isActive"
-                                id="isActive"
-                                checked={formData.isActive}
-                                onChange={handleChange}
-                                disabled={isSystemRole}
-                                className="w-5 h-5 text-teal-500 border-gray-300 rounded focus:ring-teal-500"
-                            />
-                            <label htmlFor="isActive" className="text-sm font-semibold text-gray-700">
-                                Role is Active
-                            </label>
-                        </div>
-
-                        {/* Permissions Section */}
-                        {!isSystemRole && (
-                            <div className="pt-6 border-t border-gray-200">
-                                <h3 className="text-lg font-bold text-gray-800 mb-4">
-                                    Permissions
-                                </h3>
-                                <p className="text-sm text-gray-500 mb-4">
-                                    Define what users with this role can do. Check the boxes to grant permissions.
-                                </p>
-                                <div className="border border-gray-200 rounded-xl overflow-hidden">
-                                    <PermissionEditor
-                                        permissions={formData.permissions}
-                                        onChange={handlePermissionChange}
-                                        disabled={isSystemRole}
-                                    />
+                {/* Left Column: Role Configuration */}
+                <div className="lg:col-span-4 space-y-6">
+                    <div className="bg-white rounded-[2rem] shadow-sm border border-sky-100 overflow-hidden sticky top-6">
+                        {isSystemRole && (
+                            <div className="bg-sky-900 border-b border-sky-800 p-4">
+                                <div className="flex items-start gap-3">
+                                    <Lock className="w-5 h-5 text-sky-300 shrink-0 mt-0.5" />
+                                    <div>
+                                        <h4 className="text-sm font-bold text-white">System Protected Role</h4>
+                                        <p className="text-xs text-sky-200 mt-1">
+                                            Core properties (Code, permissions) are locked to ensure system stability.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Actions */}
-                        <div className="flex gap-4 pt-4">
-                            <button
-                                type="button"
-                                onClick={() => navigate("/clinic-admin/roles")}
-                                className="flex-1 px-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={saving}
-                                className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-cyan-700 transition-all disabled:opacity-50"
-                            >
-                                {saving ? "Saving..." : "Save Changes"}
-                            </button>
+                        {error && (
+                            <div className="bg-red-50 border-b border-red-100 text-red-700 p-4 text-sm flex items-center gap-2 font-medium">
+                                <AlertCircle className="w-5 h-5" /> {error}
+                            </div>
+                        )}
+
+                        <div className="p-6 space-y-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-sky-500 uppercase tracking-wider mb-2">Display Name</label>
+                                    <input
+                                        type="text"
+                                        name="displayName"
+                                        value={formData.displayName}
+                                        onChange={handleChange}
+                                        disabled={isSystemRole}
+                                        className="w-full px-4 py-2.5 bg-sky-50/50 border border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all font-medium disabled:opacity-60 disabled:cursor-not-allowed text-sky-900"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-sky-500 uppercase tracking-wider mb-2">Role Code</label>
+                                    <div className="relative">
+                                        <Code className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sky-400" />
+                                        <input
+                                            type="text"
+                                            name="code"
+                                            value={formData.code}
+                                            onChange={handleChange}
+                                            disabled={isSystemRole}
+                                            className="w-full pl-9 pr-4 py-2.5 bg-sky-50/50 border border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all font-mono text-sm uppercase disabled:opacity-60 disabled:cursor-not-allowed text-sky-900"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-sky-500 uppercase tracking-wider mb-2">Description</label>
+                                    <textarea
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        rows={4}
+                                        className="w-full px-4 py-2.5 bg-sky-50/50 border border-sky-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all resize-none text-sm text-sky-900"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 pt-4 border-t border-sky-100">
+                                <label className="block text-xs font-bold text-sky-500 uppercase tracking-wider">Settings</label>
+
+                                <label className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.isProfessional ? 'bg-sky-50 border-sky-200' : 'bg-white border-sky-200 hover:bg-sky-50'} ${isSystemRole ? 'opacity-60 pointer-events-none' : ''}`}>
+                                    <div className={`w-5 h-5 rounded border flex items-center justify-center ${formData.isProfessional ? 'bg-sky-600 border-sky-600' : 'bg-white border-gray-300'}`}>
+                                        {formData.isProfessional && <Check className="w-3.5 h-3.5 text-white" />}
+                                    </div>
+                                    <input type="checkbox" name="isProfessional" checked={formData.isProfessional} onChange={handleChange} disabled={isSystemRole} className="hidden" />
+                                    <span className="text-sm font-bold text-sky-800">Is Doctor?</span>
+                                    <p className="text-[10px] text-sky-500 font-medium">Enables clinical features</p>
+                                </label>
+
+                                <label className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.isActive ? 'bg-green-50 border-green-200' : 'bg-white border-sky-200 hover:bg-sky-50'} ${isSystemRole ? 'opacity-60 pointer-events-none' : ''}`}>
+                                    <div className={`w-5 h-5 rounded border flex items-center justify-center ${formData.isActive ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}>
+                                        {formData.isActive && <Check className="w-3.5 h-3.5 text-white" />}
+                                    </div>
+                                    <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} disabled={isSystemRole} className="hidden" />
+                                    <span className="text-sm font-bold text-sky-800">Active Status</span>
+                                </label>
+                            </div>
+
+                            <div className="pt-4 border-t border-sky-100">
+                                <label className="block text-xs font-bold text-sky-500 uppercase tracking-wider mb-3">Icon Style</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {iconOptions.map((icon) => (
+                                        <button
+                                            key={icon}
+                                            type="button"
+                                            disabled={isSystemRole}
+                                            onClick={() => setFormData({ ...formData, icon })}
+                                            className={`w-10 h-10 text-xl rounded-xl transition-all flex items-center justify-center disabled:opacity-50 ${formData.icon === icon
+                                                ? "bg-sky-50 ring-2 ring-sky-500 shadow-sm"
+                                                : "bg-sky-50/50 hover:bg-sky-100"
+                                                }`}
+                                        >
+                                            {icon}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </main>
+
+                {/* Right Column: Permissions */}
+                <div className="lg:col-span-8 flex flex-col h-full">
+                    <div className="bg-white rounded-[2rem] shadow-sm border border-sky-100 overflow-hidden flex flex-col h-full min-h-[600px]">
+                        <div className="px-8 py-6 border-b border-sky-100 bg-sky-50/30 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-bold text-sky-950 flex items-center gap-2">
+                                    <Shield className="w-5 h-5 text-sky-600" /> Access Permissions
+                                </h3>
+                                <p className="text-sm text-sky-700/80">Fine-tune what this role can see and do.</p>
+                            </div>
+                            {isSystemRole && (
+                                <span className="bg-gray-200 text-gray-600 text-xs font-bold px-3 py-1 rounded-full">
+                                    Read Only Mode
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="p-8 flex-1 bg-white">
+                            <PermissionEditor
+                                permissions={formData.permissions}
+                                onChange={handlePermissionChange}
+                                disabled={isSystemRole}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     );
 };

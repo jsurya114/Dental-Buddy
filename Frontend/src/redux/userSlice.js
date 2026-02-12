@@ -4,9 +4,17 @@ import axiosInstance from "../api/axios";
 // Fetch all users
 export const fetchUsers = createAsyncThunk(
     "users/fetchAll",
-    async (_, { rejectWithValue }) => {
+    async (params = {}, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.get("/public/users");
+            const { status } = params;
+            let url = "/public/users";
+            const queryParams = new URLSearchParams();
+            if (status && status !== "all") queryParams.append("status", status);
+
+            const queryString = queryParams.toString();
+            if (queryString) url += `?${queryString}`;
+
+            const response = await axiosInstance.get(url);
             return response.data.users;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || "Failed to fetch users");

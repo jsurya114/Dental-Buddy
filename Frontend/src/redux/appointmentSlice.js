@@ -75,6 +75,19 @@ export const cancelAppointment = createAsyncThunk(
     }
 );
 
+// Delete appointment
+export const deleteAppointment = createAsyncThunk(
+    "appointments/delete",
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.delete(`/appointments/${id}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to delete appointment");
+        }
+    }
+);
+
 const initialState = {
     list: [],
     loading: false,
@@ -159,6 +172,16 @@ const appointmentSlice = createSlice({
                 state.successMessage = "Appointment cancelled";
             })
             .addCase(cancelAppointment.rejected, (state, action) => {
+                state.error = action.payload;
+            });
+
+        // Delete
+        builder
+            .addCase(deleteAppointment.fulfilled, (state, action) => {
+                state.list = state.list.filter(apt => apt._id !== action.payload._id);
+                state.successMessage = "Appointment deleted permanently";
+            })
+            .addCase(deleteAppointment.rejected, (state, action) => {
                 state.error = action.payload;
             });
     }

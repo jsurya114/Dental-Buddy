@@ -10,19 +10,19 @@ const ALLOWED_TRANSITIONS = {
     IN_TREATMENT: ["COMPLETED"],
     COMPLETED: [],
     CANCELLED: [],
-    NO_SHOW: ["BOOKED"] 
+    NO_SHOW: ["BOOKED"]
 };
 
 
 const checkOverlap = async (doctorId, startTime, endTime, excludeId = null) => {
     const query = {
         doctorId,
-        status: { $nin: ["CANCELLED", "NO_SHOW"] }, 
+        status: { $nin: ["CANCELLED", "NO_SHOW"] },
         $or: [
             {
-            
+
                 appointmentDate: { $lt: endTime },
- 
+
             }
         ]
     };
@@ -57,18 +57,18 @@ export const createAppointment = async (req, res) => {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
-       
+
         const patient = await Patient.findById(patientId);
         if (!patient) return res.status(404).json({ success: false, message: "Patient not found" });
 
         const doctor = await User.findById(doctorId);
         if (!doctor) return res.status(404).json({ success: false, message: "Doctor not found" });
 
-        
+
         const startTime = new Date(appointmentDate);
         const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
 
-      
+
         const isOverlap = await checkOverlap(doctorId, startTime, endTime);
         if (isOverlap) {
             return res.status(409).json({ success: false, message: "Doctor is unavailable at this time (Overlapping appointment)" });
@@ -86,10 +86,14 @@ export const createAppointment = async (req, res) => {
 
         await appointment.save();
 
+        const populatedAppointment = await Appointment.findById(appointment._id)
+            .populate("patientId", "fullName phone")
+            .populate("doctorId", "fullName");
+
         res.status(201).json({
             success: true,
             message: "Appointment booked successfully",
-            data: appointment
+            data: populatedAppointment
         });
 
     } catch (error) {
@@ -102,14 +106,14 @@ export const createAppointment = async (req, res) => {
 export const getAppointments = async (req, res) => {
     try {
         const { date, doctorId, patientId } = req.query;
-     
+
         const { role: roleCode, userId } = req.user;
 
         if (!date) {
             return res.status(400).json({ success: false, message: "Date is required" });
         }
 
-   
+
         const startOfDay = new Date(`${date}T00:00:00.000Z`);
         const endOfDay = new Date(`${date}T23:59:59.999Z`);
 
@@ -120,21 +124,21 @@ export const getAppointments = async (req, res) => {
             }
         };
 
-  
+
         if (roleCode === "DOCTOR") {
             filter.doctorId = userId;
         }
 
-       
+
         if (doctorId && roleCode !== "DOCTOR") {
             filter.doctorId = doctorId;
         }
 
-        
+
         if (patientId) filter.patientId = patientId;
         if (req.query.status) filter.status = req.query.status;
 
-       
+
 
         const appointments = await Appointment.find(filter)
             .populate("patientId", "fullName phone")
@@ -162,14 +166,14 @@ export const updateAppointmentStatus = async (req, res) => {
 
         const currentStatus = appointment.status;
 
-      
+
         if (currentStatus === status) {
             return res.json({ success: true, data: appointment });
         }
 
-      
+
         if (!ALLOWED_TRANSITIONS[currentStatus]?.includes(status)) {
-           
+
             return res.status(400).json({
                 success: false,
                 message: `Invalid status transition from ${currentStatus} to ${status}`
@@ -179,7 +183,7 @@ export const updateAppointmentStatus = async (req, res) => {
         appointment.status = status;
         await appointment.save();
 
-        
+
 
         res.json({
             success: true,
@@ -202,7 +206,7 @@ export const updateAppointment = async (req, res) => {
         const appointment = await Appointment.findById(id);
         if (!appointment) return res.status(404).json({ success: false, message: "Appointment not found" });
 
-      
+
         if (appointmentDate || durationMinutes || (doctorId && doctorId !== appointment.doctorId.toString())) {
 
             const newDocId = doctorId || appointment.doctorId;
@@ -259,5 +263,30 @@ export const cancelAppointment = async (req, res) => {
     } catch (error) {
         console.error("Cancel appointment error:", error);
         res.status(500).json({ success: false, message: "Failed to cancel appointment" });
+    }
+};
+
+export const deleteAppointment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const appointment = await Appointment.findById(id);
+
+        if (!appointment) return res.status(404).json({ success: false, message: "Appointment not found" });
+
+        if (appointment.status !== "CANCELLED") {
+            return res.status(400).json({ success: false, message: "Only cancelled appointments can be deleted" });
+        }
+
+        await Appointment.findByIdAndDelete(id);
+
+        res.json({
+            success: true,
+            message: "Appointment deleted successfully",
+            data: { _id: id }
+        });
+
+    } catch (error) {
+        console.error("Delete appointment error:", error);
+        res.status(500).json({ success: false, message: "Failed to delete appointment" });
     }
 };

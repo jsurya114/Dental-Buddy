@@ -120,31 +120,31 @@ const PermissionEditor = ({ permissions = {}, onChange, disabled = false }) => {
     };
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+        <div className="overflow-x-auto custom-scrollbar no-scrollbar-on-mobile -mx-4 sm:mx-0">
+            <table className="w-full border-collapse min-w-[600px]">
                 <thead>
-                    <tr className="bg-gray-50">
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">
-                            Resource
+                    <tr className="bg-sky-50/50">
+                        <th className="px-6 py-4 text-left text-xs font-black text-sky-900 uppercase tracking-widest border-b border-sky-100">
+                            Resource Name
                         </th>
                         {ACTIONS.map(action => (
-                            <th key={action} className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">
+                            <th key={action} className="px-4 py-4 text-center text-xs font-black text-sky-900 uppercase tracking-widest border-b border-sky-100">
                                 <div className="flex flex-col items-center gap-1">
                                     <span>{ACTION_LABELS[action]}</span>
                                     {!disabled && (
                                         <button
                                             type="button"
                                             onClick={() => handleSelectAllForAction(action)}
-                                            className="text-xs text-teal-600 hover:text-teal-700"
+                                            className="text-[10px] text-sky-500 hover:text-sky-700 font-bold hover:underline"
                                         >
-                                            all
+                                            SET ALL
                                         </button>
                                     )}
                                 </div>
                             </th>
                         ))}
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">
-                            All
+                        <th className="px-6 py-4 text-center text-xs font-black text-sky-900 uppercase tracking-widest border-b border-sky-100">
+                            ROW
                         </th>
                     </tr>
                 </thead>
@@ -154,33 +154,33 @@ const PermissionEditor = ({ permissions = {}, onChange, disabled = false }) => {
                         const hasAll = ACTIONS.every(a => resourcePermissions.includes(a));
 
                         return (
-                            <tr key={resource} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                                <td className="px-4 py-3 text-sm font-medium text-gray-800 border-b">
+                            <tr key={resource} className={idx % 2 === 0 ? "bg-white" : "bg-sky-50/20"}>
+                                <td className="px-4 py-3 text-sm font-medium text-sky-900 border-b border-sky-50">
                                     {RESOURCE_LABELS[resource]}
                                 </td>
                                 {ACTIONS.map(action => {
                                     const isChecked = resourcePermissions.includes(action);
                                     return (
-                                        <td key={action} className="px-4 py-3 text-center border-b">
+                                        <td key={action} className="px-4 py-3 text-center border-b border-sky-50">
                                             <input
                                                 type="checkbox"
                                                 checked={isChecked}
                                                 onChange={() => handleToggle(resource, action)}
                                                 disabled={disabled}
-                                                className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 disabled:opacity-50"
+                                                className="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500 disabled:opacity-50 accent-sky-600"
                                             />
                                         </td>
                                     );
                                 })}
-                                <td className="px-4 py-3 text-center border-b">
+                                <td className="px-4 py-3 text-center border-b border-sky-50">
                                     <button
                                         type="button"
                                         onClick={() => handleSelectAll(resource)}
                                         disabled={disabled}
-                                        className={`px-2 py-1 text-xs rounded ${hasAll
-                                            ? "bg-teal-100 text-teal-700"
-                                            : "bg-gray-100 text-gray-600"
-                                            } hover:bg-teal-200 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        className={`px-2 py-1 text-xs rounded transition-colors ${hasAll
+                                            ? "bg-sky-100 text-sky-700"
+                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            } hover:bg-sky-200 disabled:opacity-50 disabled:cursor-not-allowed`}
                                     >
                                         {hasAll ? "Clear" : "All"}
                                     </button>

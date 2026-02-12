@@ -56,6 +56,13 @@ export const getAllUsers = async (filters = {}) => {
         query.roleCode = { $in: roleCodes };
     }
 
+    // Status filter: active, inactive, all
+    if (filters.status === "active") {
+        query.isActive = true;
+    } else if (filters.status === "inactive") {
+        query.isActive = false;
+    }
+
     const users = await User.find(query)
         .select("-password")
         .sort({ createdAt: -1 });

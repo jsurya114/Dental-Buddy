@@ -98,7 +98,8 @@ export const login = async (req, res) => {
 
         const tokenPayload = {
             userId: user._id,
-            role: userRole
+            role: userRole,
+            fullName: user.fullName || user.loginId
         };
 
         const { accessToken, refreshToken } = generateTokens(tokenPayload);
@@ -121,6 +122,7 @@ export const login = async (req, res) => {
         }
 
         const userResponse = {
+            id: user._id,
             loginId: user.loginId,
             role: userRole,
             fullName: user.fullName || user.loginId,
@@ -161,7 +163,8 @@ export const refreshAccessToken = async (req, res) => {
 
         const newAccessToken = generateAccessToken({
             userId: decoded.userId,
-            role: decoded.role
+            role: decoded.role,
+            fullName: decoded.fullName
         });
 
         return res.status(200).json({
@@ -234,6 +237,7 @@ export const getCurrentUser = async (req, res) => {
         return res.status(200).json({
             success: true,
             user: {
+                id: user._id,
                 loginId: user.loginId,
                 role: userRole,
                 fullName: user.fullName || user.loginId,

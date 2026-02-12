@@ -3,14 +3,26 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, clearError } from "../redux/authSlice";
 import axiosInstance from "../api/axios";
-import { getDashboardRoute } from "../config/roleDashboardMap";
+import {
+    Lock, User, ArrowLeft, Loader2, AlertCircle,
+    ShieldCheck, Stethoscope, Users, Monitor, UserCog, Eye, EyeOff
+} from "lucide-react";
+
+// Map role codes to icons
+const ROLE_ICONS = {
+    "CLINIC_ADMIN": ShieldCheck,
+    "DOCTOR": Stethoscope,
+    "FRONT_DESK": Monitor,
+    "PATIENT": Users,
+    "SUPER_ADMIN": UserCog
+};
 
 const Login = () => {
     const { role } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth);
+    const { loading, error } = useSelector((state) => state.auth);
 
     const [roleInfo, setRoleInfo] = useState(null);
     const [roleLoading, setRoleLoading] = useState(true);
@@ -21,7 +33,7 @@ const Login = () => {
         password: ""
     });
 
-    // Convert URL slug to role code: clinic-admin -> CLINIC_ADMIN
+    // Convert URL slug to role code
     const roleCode = role ? role.toUpperCase().replace(/-/g, "_") : "";
 
     useEffect(() => {
@@ -44,17 +56,11 @@ const Login = () => {
             }
         };
 
-        fetchRoleInfo();
+        if (role) {
+            fetchRoleInfo();
+        }
         dispatch(clearError());
     }, [role, dispatch]);
-
-    // Redirect on successful login using system dashboard map
-    // useEffect(() => {
-    //     if (isAuthenticated && user) {
-    //         const dashboardRoute = getDashboardRoute(user.role);
-    //         navigate(dashboardRoute, { replace: true });
-    //     }
-    // }, [isAuthenticated, user, navigate]);
 
     const handleChange = (e) => {
         setFormData({
@@ -75,9 +81,10 @@ const Login = () => {
     if (roleLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin"></div>
-                    <p className="text-gray-500 text-lg">Loading...</p>
+                <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in-95 duration-500">
+                    <div className="w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 text-teal-600 animate-spin" />
+                    </div>
                 </div>
             </div>
         );
@@ -86,85 +93,98 @@ const Login = () => {
     if (roleError) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 text-center max-w-md">
-                    <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 text-center max-w-md w-full animate-in fade-in zoom-in-95 duration-300">
+                    <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-100">
+                        <AlertCircle className="w-8 h-8 text-red-500" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-800 mb-2">Invalid Role</h1>
+                    <h1 className="text-xl font-bold text-gray-800 mb-2">Invalid Access</h1>
                     <p className="text-gray-500 mb-6">{roleError}</p>
                     <Link
                         to="/"
-                        className="inline-block px-6 py-3 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 transition-all duration-200"
+                        className="inline-flex items-center justify-center px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all active:scale-95 w-full"
                     >
-                        Back to Role Selection
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Selection
                     </Link>
                 </div>
             </div>
         );
     }
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-            {/* Background decoration - Optional, kept subtle or removed */}
-            {/* <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-96 h-96 bg-teal-50 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-teal-50 rounded-full blur-3xl"></div>
-            </div> */}
+    const RoleIcon = roleInfo ? (ROLE_ICONS[roleInfo.code] || Lock) : Lock;
 
-            <div className="relative w-full max-w-md">
-                {/* Back link */}
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-teal-50/20 to-slate-100 p-4 relative overflow-hidden">
+
+            {/* Background Decoration */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[10%] left-[20%] w-64 h-64 bg-teal-200/20 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-[20%] right-[20%] w-64 h-64 bg-cyan-200/20 rounded-full blur-3xl animate-pulse delay-700"></div>
+            </div>
+
+            <div className="relative w-full max-w-[420px] animate-in fade-in slide-in-from-bottom-8 duration-700">
+                {/* Back Link */}
                 <Link
                     to="/"
-                    className="inline-flex items-center text-gray-500 hover:text-gray-800 mb-6 transition-colors"
+                    className="inline-flex items-center text-sky-600 hover:text-sky-800 mb-6 transition-colors font-black text-xs sm:text-sm group bg-white/50 px-4 py-2 rounded-xl border border-sky-100/50 backdrop-blur-sm shadow-sm"
                 >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Back to Role Selection
+                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                    Switch Role
                 </Link>
 
                 {/* Login Card */}
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+                <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl shadow-sky-900/10 border border-white/50 p-6 sm:p-10 relative overflow-hidden">
+
+                    {/* Top Accent Line */}
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-teal-500 to-cyan-500"></div>
+
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-teal-50 rounded-2xl mb-4 text-teal-600">
-                            <span className="text-3xl">{roleInfo?.icon || "🔐"}</span>
+                        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-3xl mb-5 text-teal-600 shadow-inner">
+                            <RoleIcon className="w-10 h-10" />
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-800 mb-1">{roleInfo?.displayName || "Login"}</h1>
-                        <p className="text-gray-500">Enter your credentials to continue</p>
+                        <h1 className="text-2xl font-bold text-gray-900 mb-1">{roleInfo?.displayName || "Login"}</h1>
+                        <p className="text-gray-500 text-sm">Please enter your credentials to verify your identity.</p>
                     </div>
 
-                    {/* Error message */}
+                    {/* Error Message */}
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                            {error}
+                        <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                            <p className="text-red-600 text-sm font-medium leading-tight">{error}</p>
                         </div>
                     )}
 
-                    {/* Login Form */}
+                    {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
                                 Login ID
                             </label>
-                            <input
-                                type="text"
-                                name="loginId"
-                                value={formData.loginId}
-                                onChange={handleChange}
-                                placeholder="Enter your login ID"
-                                required
-                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
-                            />
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-teal-500 transition-colors">
+                                    <User className="w-5 h-5" />
+                                </div>
+                                <input
+                                    type="text"
+                                    name="loginId"
+                                    value={formData.loginId}
+                                    onChange={handleChange}
+                                    placeholder="Enter your ID"
+                                    required
+                                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-medium text-gray-700 placeholder:text-gray-400 group-hover:bg-white"
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
                                 Password
                             </label>
-                            <div className="relative">
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-teal-500 transition-colors">
+                                    <Lock className="w-5 h-5" />
+                                </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     name="password"
@@ -172,23 +192,14 @@ const Login = () => {
                                     onChange={handleChange}
                                     placeholder="Enter your password"
                                     required
-                                    className="w-full px-4 py-3 pr-12 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                                    className="w-full pl-11 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-medium text-gray-700 placeholder:text-gray-400 group-hover:bg-white"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
                                 >
-                                    {showPassword ? (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    )}
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
                             </div>
                         </div>
@@ -196,12 +207,12 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
+                            className="w-full py-4 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 hover:shadow-lg hover:shadow-gray-900/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
                         >
                             {loading ? (
                                 <>
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    Signing in...
+                                    <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                                    <span>Verifying...</span>
                                 </>
                             ) : (
                                 "Sign In"
@@ -211,9 +222,12 @@ const Login = () => {
                 </div>
 
                 {/* Footer */}
-                <p className="text-center mt-8 text-white/60 text-sm">
-                    <span className="text-white font-medium">Dental Buddy</span>
-                </p>
+                <div className="mt-8 text-center">
+                    <p className="text-gray-400 text-xs font-medium flex items-center justify-center gap-1.5 opacity-60">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Secure Clinical Access
+                    </p>
+                </div>
             </div>
         </div>
     );

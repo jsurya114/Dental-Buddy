@@ -1,113 +1,123 @@
 import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
 import { menuConfig } from "../config/menuConfig";
+import * as LucideIcons from "lucide-react";
 
 /**
- * Sidebar - Permission-aware navigation sidebar
- * 
- * Reads from menuConfig and filters items based on user permissions.
- * CLINIC_ADMIN sees all items.
+ * Sidebar - Responsive Mobile Drawer
  */
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
 
-    // Get user and permissions from either auth slice
+    // Get user and permissions
     const authUser = useSelector((state) => state.auth.user);
     const clinicAdmin = useSelector((state) => state.clinicAdmin?.admin);
     const user = authUser || clinicAdmin;
     const permissions = authUser?.permissions || clinicAdmin?.permissions;
 
-    /**
-     * Check if user can access a menu item
-     */
-    /**
-     * Check if user can access a menu item
-     */
     const canAccess = (item) => {
         const { module, action, allowedRoles } = item;
         const userRole = user?.role || user?.roleCode;
 
-        // 1. Strict Role Restriction (if defined) overrides everything
-        if (allowedRoles && !allowedRoles.includes(userRole)) {
-            return false;
-        }
-
-        // 2. Dashboard is always accessible
+        if (allowedRoles && !allowedRoles.includes(userRole)) return false;
         if (!module) return true;
-
-        // 3. CLINIC_ADMIN has all permissions (unless restricted by step 1)
         if (userRole === "CLINIC_ADMIN") return true;
-
-        // 4. Check specific permission
         if (!permissions || !permissions[module]) return false;
 
-        // If action is an array, check if user has ANY of the permissions
         if (Array.isArray(action)) {
             return action.some(a => permissions[module].includes(a));
         }
-
         return permissions[module].includes(action);
     };
 
-    /**
-     * Get active state for NavLink
-     */
-    const isActive = (path) => {
-        return location.pathname.includes(path);
+    const isActive = (path) => location.pathname.includes(path);
+
+    // Dynamic Icon Component
+    const Icon = ({ name }) => {
+        const LucideIcon = LucideIcons[name] || LucideIcons.HelpCircle;
+        return <LucideIcon size={20} />;
     };
 
     return (
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm">
-            {/* Logo */}
-            <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <span className="text-xl text-white">🦷</span>
-                    </div>
-                    <div>
-                        <h1 className="text-lg font-bold text-gray-800">Dental Buddy</h1>
-                        <p className="text-xs text-gray-500">EMR System</p>
-                    </div>
-                </div>
-            </div>
+        <>
+            {/* Mobile Overlay */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 lg:hidden transition-all duration-300"
+                    onClick={onClose}
+                />
+            )}
 
-            {/* Navigation */}
-            <nav className="flex-1 p-4 overflow-y-auto">
-                <ul className="space-y-1">
+            <aside
+                className={`fixed inset-y-0 left-0 w-64 bg-sky-200 text-sky-950 flex flex-col shadow-2xl lg:shadow-xl border-r border-sky-300/50 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
+                    }`}
+            >
+                {/* Logo */}
+                <div className="p-6 border-b border-sky-300/50 relative">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-sky-600 rounded-xl flex items-center justify-center shadow-md shadow-sky-600/20">
+                            <LucideIcons.Activity className="text-white" size={24} />
+                        </div>
+                        <div>
+                            <h1 className="text-lg font-bold text-sky-950 tracking-tight leading-tight">Dental Buddy</h1>
+                            <p className="text-[10px] text-sky-700 font-bold uppercase tracking-widest">Medical SaaS</p>
+                        </div>
+                    </div>
+                    {/* Close Button Mobile */}
+                    <button
+                        onClick={onClose}
+                        className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2 p-2 text-sky-700 hover:bg-sky-300/50 rounded-lg"
+                    >
+                        <LucideIcons.X size={20} />
+                    </button>
+                </div>
+
+                {/* Navigation */}
+                <nav className="flex-1 p-4 overflow-y-auto space-y-1 custom-scrollbar">
                     {menuConfig.map((item) =>
                         canAccess(item) ? (
-                            <li key={item.path}>
+                            <div key={item.path}>
                                 <NavLink
                                     to={`/app/${item.path}`}
+                                    onClick={() => {
+                                        if (window.innerWidth < 1024) onClose();
+                                    }}
                                     className={({ isActive: navActive }) =>
-                                        `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${navActive || isActive(item.path)
-                                            ? "bg-teal-600 text-white shadow-md"
-                                            : "text-gray-600 hover:bg-gray-100"
+                                        `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${navActive || isActive(item.path)
+                                            ? "bg-sky-600 text-white shadow-lg shadow-sky-600/30 font-bold translate-x-1"
+                                            : "text-sky-800 hover:bg-sky-300/50 hover:text-sky-950 font-bold hover:translate-x-1"
                                         }`
                                     }
                                 >
-                                    <span className="text-lg">{item.icon}</span>
-                                    <span className="font-medium">{item.label}</span>
+                                    <Icon name={item.icon} />
+                                    <span className="text-sm tracking-tight">{item.label}</span>
+                                    {(item.path === 'patients' || item.path === 'appointments') && (
+                                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white opacity-0 group-[.active]:opacity-100 transition-opacity" />
+                                    )}
                                 </NavLink>
-                            </li>
+                            </div>
                         ) : null
                     )}
-                </ul>
-            </nav>
+                </nav>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-gray-100">
-                <div className="px-4 py-3 bg-gray-50 rounded-xl">
-                    <p className="text-xs text-gray-500">Logged in as</p>
-                    <p className="text-sm font-medium text-gray-700 truncate">
-                        {user?.fullName || user?.loginId || "Unknown"}
-                    </p>
-                    <p className="text-xs text-teal-600 font-medium">
-                        {user?.role || user?.roleCode || "No Role"}
-                    </p>
+                {/* User Profile */}
+                <div className="p-4 border-t border-sky-300/50 bg-sky-200">
+                    <div className="bg-sky-100/50 rounded-2xl p-3 flex items-center gap-3 border border-sky-300/30 shadow-sm">
+                        <div className="w-10 h-10 min-w-10 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 flex items-center justify-center text-white font-black shadow-inner">
+                            {(user?.fullName?.[0] || user?.loginId?.[0] || "U").toUpperCase()}
+                        </div>
+                        <div className="overflow-hidden">
+                            <p className="text-xs font-black text-sky-950 truncate uppercase tracking-tight">
+                                {user?.fullName || user?.loginId || "User"}
+                            </p>
+                            <p className="text-[10px] text-sky-600 truncate font-bold uppercase tracking-wider">
+                                {user?.role?.replace('_', ' ').toLowerCase() || "Restricted"}
+                            </p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </aside>
+            </aside>
+        </>
     );
 };
 
